@@ -1,152 +1,87 @@
-# Plano de Construção de Software: FHIR Guard CLI
+# Análise e Recomendações para o Módulo Core da CLI (1.1)
 
-## 1. Arquitetura
+## Tecnologias Recomendadas e Justificativas
 
-A arquitetura do sistema será composta pelos seguintes componentes principais:
+### 1\. Processador de Comandos e Argumentos
 
-### 1.1. Módulo Core da CLI
-- Processador de comandos e argumentos
-- Gerenciador de diretórios e configurações
-- Sistema de logging
+Tecnologia escolhida: Typer  
+Motivos:
 
-### 1.2. Módulo de Gerenciamento de Versões
-- Gerenciador de download e instalação
-- Controlador de versões (listagem, atualização, remoção)
-- Validador de versões semânticas
+* Typer é construído sobre Click, mas com foco em simplicidade e type hints nativos  
+* Excelente suporte para autocompletion no terminal  
+* Geração automática de help (--help)  
+* Integração natural com Python type hints (alinhado com critérios de qualidade do projeto)  
+* Menos boilerplate que Click puro  
+* Suporte a subcomandos hierárquicos (como visto nos requisitos: fg start, fg stop, etc.)
 
-### 1.3. Módulo de Controle de Aplicação
-- Gerenciador de processos (iniciar, parar, status)
-- Monitor de recursos (memória, CPU, tarefas)
-- Coletor de logs
+Alternativa: Click seria uma boa opção também, mas exigiria mais código boilerplate.
 
-### 1.4. Módulo de Configuração
-- Parser e validador de YAML
-- Gerenciador de configurações padrão
-- Utilitário de exibição de configurações
+### 2\. Gerenciador de Diretórios e Configurações
 
-### 1.5. Módulo GUI
-- Interface gráfica de usuário
-- Adaptadores para funcionalidades da CLI
+Tecnologias:
 
-### 1.6. Módulo de Comunicação de Rede
-- Cliente HTTP para verificação de versões
-- Gerenciador de downloads
+* pathlib (nativo do Python) para manipulação de caminhos multiplataforma  
+* os (módulo nativo) para operações do sistema de arquivos  
+* dotenv para variáveis de ambiente (opcional)
 
----
+Motivos:
 
-## 2. Tecnologias (Python)
+* pathlib é mais moderno e seguro que os.path  
+* Manipulação consistente de caminhos entre Windows/Linux/macOS  
+* Suporte nativo para operações como .fg no home directory
 
-### 2.1. Linguagem Principal
-- Python 3.9+: para compatibilidade entre plataformas e recursos modernos
+### 3\. Sistema de Logging
 
-### 2.2. Frameworks e Bibliotecas
-- **Click ou Typer**: para processamento de comandos e argumentos CLI
-- **PyYAML**: para processamento de arquivos YAML de configuração
-- **Loguru ou logging**: para sistema de logging
-- **Requests**: para comunicação HTTP
-- **psutil**: para monitoramento de processos e recursos
-- **rich**: para saída formatada e colorida no terminal
-- **PyQt6 ou Tkinter**: para interface gráfica (módulo GUI)
-- **pytest**: para testes unitários e de integração
-- **tox**: para testes em múltiplos ambientes
+Tecnologia: Loguru  
+Motivos:
 
-### 2.3. Ferramentas de Desenvolvimento
-- **Poetry ou Pipenv**: para gerenciamento de dependências e ambiente virtual
-- **VS Code ou PyCharm**: como IDE principal
-- **Git**: para controle de versão
-- **GitHub Actions**: para CI/CD
-- **pre-commit**: para verificação de qualidade de código antes de commits
-- **black**: para formatação de código
-- **flake8 ou pylint**: para linting
-- **mypy**: para verificação de tipos (opcional)
+* Muito mais simples que o módulo logging padrão  
+* Suporte nativo a cores (importante para mensagens de erro/sucesso destacadas)  
+* Formatação fácil de logs  
+* Rotação de arquivos de log automática  
+* Melhor experiência para o usuário final com mensagens claras
 
-### 2.4. Ferramentas de Empacotamento e Distribuição
-- **PyInstaller ou cx_Freeze**: para criar executáveis standalone
-- **setuptools e wheel**: para criação de pacotes Python
-- **flit**: para publicação simplificada de pacotes
+## Resultados Esperados do Seu Desenvolvimento
 
----
+1. CLI Funcional:  
+   * Todos os comandos principais (fg start, fg stop, fg list, etc.) devem ser reconhecidos e processados  
+   * Sistema de ajuda integrado gerado automaticamente (--help)  
+   * Parsing robusto de argumentos e opções (como \--dir, \--log-level)  
+2. Gerenciamento de Diretórios:  
+   * Criação automática da estrutura $FG\_HOME/versions/\[version\]  
+   * Resolução correta do diretório padrão (\~/.fg) ou customizado (via \--dir ou FG\_HOME)  
+   * Operações de arquivo seguras e multiplataforma  
+3. Sistema de Logging:  
+   * Mensagens formatadas e coloridas conforme o nível (erro=vermelho, sucesso=verde)  
+   * Suporte aos níveis debug, info, warn, error  
+   * Logs persistentes em arquivo quando necessário  
+4. Integração com Outros Módulos:  
+   * API clara para outros módulos registrarem comandos  
+   * Mecanismo para compartilhar configurações globais (como FG\_HOME)  
+5. Critérios de Qualidade:  
+   * 100% de cobertura de testes para o core (já que é fundamental)  
+   * Documentação completa de todas as funções públicas  
+   * Type hints em todo o código  
+   * Tempo de inicialização \<0.5s (como especificado)
 
-## 3. Critérios de Aceitação
+## Relacionamento com Outros Módulos
 
-### 3.1. Testes
+### 1\. Módulo 1.2 (Gerenciamento de Versões)
 
-#### 3.1.1. Testes Unitários
-- Cobertura mínima de **80%** para código de produção
-- Testes de unidade para todas as classes de utilidade
+* Como: Seu módulo irá chamar comandos como fg install que delegam para o 1.2  
+* Interface: Defina uma API clara para operações de versão (ex: get\_installed\_versions())
 
-#### 3.1.2. Testes de Integração
-- Testes para todos os componentes principais
-- Testes de integração end-to-end para fluxos principais
+### 2\. Módulo 1.3 (Controle de Aplicação)
 
-#### 3.1.3. Testes de Sistema
-- Testes de execução completa em ambientes **Windows, Linux e macOS**
-- Testes de carga para verificar consumo de recursos
+* Como: Comandos como fg start/stop precisam se integrar com o gerenciador de processos  
+* Interface: Crie um protocolo para iniciar/parar processos e verificar status
 
-### 3.2. Qualidade de Código
-- Conformidade com **PEP 8** (estilo de código Python)
-- Documentação de **docstrings** para todas as funções e classes
-- **Type hints** para melhorar manutenção e suporte em IDEs
+### 3\. Módulo 1.4 (Configuração)
 
-### 3.3. Desempenho
-- Tempo de inicialização da CLI inferior a **0.5 segundo**
-- Uso eficiente de recursos para operações de longa duração
+* Como: Seu módulo precisa ler configurações básicas (como paths padrão)  
+* Interface: Defina como configs são carregadas (ex: load\_global\_config())
 
-### 3.4. Compatibilidade
-- Compatível com **Windows 10/11, macOS 11+ e Linux** (Ubuntu 20.04+, Fedora 34+)
-- Funcional em sistemas com **Python 3.9 ou superior**
+### 4\. Módulo 1.6 (Comunicação de Rede)
 
-### 3.5. Usabilidade
-- Mensagens de erro claras e acionáveis
-- Ajuda contextual para todos os comandos (**--help**)
-- Feedback de progresso para operações longas (**barras de progresso**)
-
-### 3.6. Documentação
-- Manual de usuário completo
-- Guia de instalação para cada plataforma
-- Documentação técnica de arquitetura
-- Exemplos de uso para todos os comandos
-
----
-
-## 4. Estratégia para Comunicação entre Membros da Equipe
-
-### 4.1. Ferramentas de Comunicação
-- **Discord**: para comunicação diária e discussões rápidas
-- **GitHub**: para armazenamento de código e pull requests
-- **Google Meet**: para reuniões virtuais
-
-### 4.2. Processos de Comunicação
-
-#### 4.2.1. Revisões de Código
-- **Pull requests** obrigatórios para todas as mudanças
-- Revisão por pelo menos **um outro membro da equipe**
-
-#### 4.2.2. Documentação
-- Decisões técnicas documentadas
-- Código documentado
-- Atualizações de documentação no mesmo **PR** que as mudanças de código
-
-#### 4.2.3. Comunicação Assíncrona
-- Canal específico no **Discord** para cada componente principal
-- Canal de **anúncios** para comunicações importantes
-
-## 5. Divisão de módulos
-
-### 5.1. Módulo Core da CLI
-- Moisés
-
-### 5.2. Módulo de Gerenciamento de Versões
-- Gabriel Mota
-
-### 5.3. Módulo de Controle de Aplicação
-- Gabriel Ribeiro
-  
-### 5.4. Módulo de Configuração
-- Jarison
-
-### 5.5. Módulo GUI
-- Victor
-
-### 5.6. Módulo de Comunicação de Rede
-- Matheus
+* Como: Para operações como fg update que verificam versões online  
+* Interface: Crie um cliente HTTP abstrato que o 1.6 implementa
