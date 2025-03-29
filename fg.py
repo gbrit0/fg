@@ -8,7 +8,7 @@ import typer
 
 app = typer.Typer()
 
-versionHelp = typer.Option("last","-v","--version", help= "Versão do FHIR Guard.")
+versionHelp = typer.Option(None,"-v","--version", help= "Versão do FHIR Guard.")
 pidHelp = typer.Argument(help = "PID can be obtained from the 'fg status' command.")
 tailHelp = typer.Option(None, "--tail", "-t", help="Shows the last n lines of the logs. If not specified, shows all logs.")
 followHelp = typer.Option(False, "--follow", "-f", help="Follows the log output in real-time.")
@@ -50,7 +50,7 @@ def update():
 def uninstall(version: str = versionHelp):
     """Removes a specific version of the application."""
     
-    if input("Confirm uninstallation of version [version]? (y/N)") == 'y':
+    if input(f"Confirm uninstallation of version {version}? (y/N)") == 'y':
         print(f"Version {version} uninstalled successfully")
 
 
@@ -120,7 +120,7 @@ def status():
     
 
 @app.command()
-def logs(pid:int = pidHelp, tail:int = tailHelp, follow = followHelp):
+def logs(pid:int = pidHelp, tail:int = tailHelp, follow:bool = followHelp):
     """Displays the logs for a specific running instance."""
     print(f"Mostrando os logs do processo: {pid}")
     if follow:
