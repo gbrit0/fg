@@ -131,3 +131,24 @@ A arquitetura do sistema será composta pelos seguintes componentes principais:
 - Canal específico no **Discord** para cada componente principal
 - Canal de **anúncios** para comunicações importantes
 
+## 5. Divisão de módulos
+
+### 5.1. Módulo Core da CLI
+- Moisés
+
+### 5.2. Módulo de Gerenciamento de Versões
+- Gabriel Mota
+
+### 5.3. Módulo de Controle de Aplicação
+- Gabriel Ribeiro
+  
+### 5.4. Módulo de Configuração
+- Jarison
+
+### 5.5. Módulo GUI
+- Victor
+
+### 5.6. Módulo de Comunicação de Rede
+- Matheus
+
+
