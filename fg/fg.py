@@ -2,9 +2,9 @@ import typer
 
 #INTRUÇOES DE TESTE
 #INSTALAR A BIBLIOTECA typer
-#USAR O COMANDO pyhton fg.py --help PARA LISTAR OS COMANDOS POSSÍVEIS
-#USAR O COMANDO python fg.py [command] PARA EXECURAR UM COMANDO LISTADO EX: python fg.py start
-#USAR O COMANDO python fg.py [command] --help PARA MOSTRAR A LISTA DE ARGUMENTOS E OPÇÕES EX: python fg.py start --help
+#USAR O COMANDO pyhton fg/fg.py --help PARA LISTAR OS COMANDOS POSSÍVEIS
+#USAR O COMANDO python fg/fg.py [command] PARA EXECURAR UM COMANDO LISTADO EX: python fg.py start
+#USAR O COMANDO python fg/fg.py [command] --help PARA MOSTRAR A LISTA DE ARGUMENTOS E OPÇÕES EX: python fg.py start --help
 
 app = typer.Typer()
 
