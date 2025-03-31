@@ -150,3 +150,5 @@ A arquitetura do sistema será composta pelos seguintes componentes principais:
 
 ### 5.6. Módulo de Comunicação de Rede
 - Matheus
+
+
