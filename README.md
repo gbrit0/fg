@@ -150,3 +150,7 @@ A arquitetura do sistema será composta pelos seguintes componentes principais:
 
 ### 5.6. Módulo de Comunicação de Rede
 - Matheus
+  
+
+## Fluxograma da aplicação (Arquitetura)
+Link: https://lucid.app/lucidchart/12082aa2-ffb3-4a34-bfcb-d6fd9770d4ca/edit?beaconFlowId=A5BDFFA03A4A1A5E&invitationId=inv_10730c73-8163-4eee-b5f3-1e05ed490456&page=0_0#
