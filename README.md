@@ -1,158 +1,91 @@
-#1#
+# 1. Tecnologias Recomendadas
 
-# Plano de Construção de Software: FHIR Guard CLI
+## 1.1. Processador de Comandos e Argumentos
+O processamento de comandos e argumentos é essencial para integrar o módulo de configuração com a interface de linha de comando (CLI). Para essa funcionalidade, as seguintes tecnologias são sugeridas:
 
-## 1. Arquitetura
+Tecnologia Recomendada:
+argparse (nativo do Python) ou click (biblioteca externa).
 
-A arquitetura do sistema será composta pelos seguintes componentes principais:
+Justificativa:
+argparse: É a biblioteca padrão do Python para lidar com argumentos de linha de comando. É robusta, extensível e não requer pacotes adicionais.
+click: Oferece uma abordagem mais moderna e simplificada para criar interfaces CLI, com suporte a comandos organizados em subcomandos e validação de argumentos.
 
-### 1.1. Módulo Core da CLI
-- Processador de comandos e argumentos
-- Gerenciador de diretórios e configurações
-- Sistema de logging
+## 1.2. Gerenciador de Diretórios e Configurações
+O gerenciamento de diretórios e configurações exige uma abordagem estruturada para leitura, validação e persistência de arquivos de configuração.
 
-### 1.2. Módulo de Gerenciamento de Versões
-- Gerenciador de download e instalação
-- Controlador de versões (listagem, atualização, remoção)
-- Validador de versões semânticas
+Tecnologia Recomendada:
+pyyaml ou ruamel.yaml para manipulação de arquivos YAML.
+os e pathlib para manipular diretórios e caminhos de arquivos.
 
-### 1.3. Módulo de Controle de Aplicação
-- Gerenciador de processos (iniciar, parar, status)
-- Monitor de recursos (memória, CPU, tarefas)
-- Coletor de logs
+Justificativa:
+YAML: É uma escolha popular para arquivos de configuração devido à sua legibilidade e suporte a hierarquias complexas.
+pyyaml: É leve e amplamente utilizado para carregar e salvar configurações em YAML.
+ruamel.yaml: É mais avançado, oferecendo melhor suporte para preservação de formatação e comentários no YAML.
+pathlib: Uma API moderna para manipular caminhos de arquivos e diretórios, substituindo a funcionalidade básica de os.
 
-### 1.4. Módulo de Configuração
-- Parser e validador de YAML
-- Gerenciador de configurações padrão
-- Utilitário de exibição de configurações
+## 1.3. Sistema de Logging
+Um sistema de logging robusto é fundamental para registrar operações do módulo de configuração e depurar erros relacionados às configurações.
 
-### 1.5. Módulo GUI
-- Interface gráfica de usuário
-- Adaptadores para funcionalidades da CLI
+Tecnologia Recomendada:
+Biblioteca padrão logging do Python.
 
-### 1.6. Módulo de Comunicação de Rede
-- Cliente HTTP para verificação de versões
-- Gerenciador de downloads
+Justificativa:
+É flexível, configurável e permite registrar mensagens em diferentes níveis de severidade (DEBUG, INFO, WARNING, ERROR, CRITICAL).
+Permite integração com arquivos de log para análise posterior.
 
----
+# 2. Resultados Esperados do Desenvolvimento
+Ao implementar as tecnologias recomendadas, espera-se alcançar os seguintes resultados:
 
-## 2. Tecnologias (Python)
+## 1- Processador de Comandos e Argumentos:
+- Suporte a comandos como --config para definir o caminho do arquivo de configuração e --show-config para exibir as configurações carregadas.
+- Validação automática de parâmetros, com mensagens claras de erro para entradas inválidas.
 
-### 2.1. Linguagem Principal
-- Python 3.9+: para compatibilidade entre plataformas e recursos modernos
+## 2- Gerenciador de Diretórios e Configurações:
+- Leitura de arquivos de configuração em YAML com suporte à validação de esquema.
+- Criação automática de diretórios e arquivos padrão caso não existam.
+- Suporte a configurações padrão e personalizadas.
 
-### 2.2. Frameworks e Bibliotecas
-- **Click ou Typer**: para processamento de comandos e argumentos CLI
-- **PyYAML**: para processamento de arquivos YAML de configuração
-- **Loguru ou logging**: para sistema de logging
-- **Requests**: para comunicação HTTP
-- **psutil**: para monitoramento de processos e recursos
-- **rich**: para saída formatada e colorida no terminal
-- **PyQt6 ou Tkinter**: para interface gráfica (módulo GUI)
-- **pytest**: para testes unitários e de integração
-- **tox**: para testes em múltiplos ambientes
+## 3- Sistema de Logging:
+- Registro de todas as operações relacionadas ao carregamento e validação de configurações.
+- Logs acessíveis para depuração e análise de problemas.
 
-### 2.3. Ferramentas de Desenvolvimento
-- **Poetry ou Pipenv**: para gerenciamento de dependências e ambiente virtual
-- **VS Code ou PyCharm**: como IDE principal
-- **Git**: para controle de versão
-- **GitHub Actions**: para CI/CD
-- **pre-commit**: para verificação de qualidade de código antes de commits
-- **black**: para formatação de código
-- **flake8 ou pylint**: para linting
-- **mypy**: para verificação de tipos (opcional)
+## 4- Parser e Validador de YAML:
+- Capacidade de validar a estrutura e os valores de arquivos YAML com base em esquemas predefinidos.
+- Mensagens de erro claras para problemas no arquivo de configuração.
 
-### 2.4. Ferramentas de Empacotamento e Distribuição
-- **PyInstaller ou cx_Freeze**: para criar executáveis standalone
-- **setuptools e wheel**: para criação de pacotes Python
-- **flit**: para publicação simplificada de pacotes
+## 5- Utilitário de Exibição de Configurações:
+- Exibição formatada e legível das configurações carregadas, com suporte a filtros (ex.: mostrar apenas uma seção específica).
 
----
+# Desenvolvimento dos Módulos Relacionados
+## 1.1. Módulo Core da CLI
+Funcionalidades:
+Receber e processar comandos.
+Integrar com o módulo de configuração para carregar e validar arquivos YAML.
 
-## 3. Critérios de Aceitação
+## 1.2. Módulo de Gerenciamento de Versões
+Funcionalidades:
+Integrar com o sistema de configuração para definir diretórios padrão para downloads.
+Validar versões semânticas configuradas no arquivo YAML.
 
-### 3.1. Testes
+## 1.3. Módulo de Controle de Aplicação
+Funcionalidades:
+Usar configurações carregadas para ajustar limites de memória e CPU.
+Registrar logs com base no sistema de logging configurado.
 
-#### 3.1.1. Testes Unitários
-- Cobertura mínima de **80%** para código de produção
-- Testes de unidade para todas as classes de utilidade
+## 1.4. Módulo de Configuração
+Funcionalidades:
+Parser e validador de YAML para carregar configurações.
+Gerenciar configurações padrão e personalizadas.
+Registrar logs de erros e operações bem-sucedidas.
+Exibir configurações de forma legível na CLI.
 
-#### 3.1.2. Testes de Integração
-- Testes para todos os componentes principais
-- Testes de integração end-to-end para fluxos principais
+## 1.5. Módulo GUI
+Funcionalidades:
+Adicionar suporte para carregar e exibir configurações com base nos arquivos YAML.
+Fornecer adaptadores para as funcionalidades de exibição e validação.
 
-#### 3.1.3. Testes de Sistema
-- Testes de execução completa em ambientes **Windows, Linux e macOS**
-- Testes de carga para verificar consumo de recursos
+## 1.6. Módulo de Comunicação de Rede
+Funcionalidades:
+Verificar configurações de rede no arquivo YAML (ex.: URLs de atualização).
+Registrar erros de conexão e configurações inválidas no sistema de logging.
 
-### 3.2. Qualidade de Código
-- Conformidade com **PEP 8** (estilo de código Python)
-- Documentação de **docstrings** para todas as funções e classes
-- **Type hints** para melhorar manutenção e suporte em IDEs
-
-### 3.3. Desempenho
-- Tempo de inicialização da CLI inferior a **0.5 segundo**
-- Uso eficiente de recursos para operações de longa duração
-
-### 3.4. Compatibilidade
-- Compatível com **Windows 10/11, macOS 11+ e Linux** (Ubuntu 20.04+, Fedora 34+)
-- Funcional em sistemas com **Python 3.9 ou superior**
-
-### 3.5. Usabilidade
-- Mensagens de erro claras e acionáveis
-- Ajuda contextual para todos os comandos (**--help**)
-- Feedback de progresso para operações longas (**barras de progresso**)
-
-### 3.6. Documentação
-- Manual de usuário completo
-- Guia de instalação para cada plataforma
-- Documentação técnica de arquitetura
-- Exemplos de uso para todos os comandos
-
----
-
-## 4. Estratégia para Comunicação entre Membros da Equipe
-
-### 4.1. Ferramentas de Comunicação
-- **Discord**: para comunicação diária e discussões rápidas
-- **GitHub**: para armazenamento de código e pull requests
-- **Google Meet**: para reuniões virtuais
-
-### 4.2. Processos de Comunicação
-
-#### 4.2.1. Revisões de Código
-- **Pull requests** obrigatórios para todas as mudanças
-- Revisão por pelo menos **um outro membro da equipe**
-
-#### 4.2.2. Documentação
-- Decisões técnicas documentadas
-- Código documentado
-- Atualizações de documentação no mesmo **PR** que as mudanças de código
-
-#### 4.2.3. Comunicação Assíncrona
-- Canal específico no **Discord** para cada componente principal
-- Canal de **anúncios** para comunicações importantes
-
-## 5. Divisão de módulos
-
-### 5.1. Módulo Core da CLI
-- Moisés
-
-### 5.2. Módulo de Gerenciamento de Versões
-- Gabriel Mota
-
-### 5.3. Módulo de Controle de Aplicação
-- Gabriel Ribeiro
-  
-### 5.4. Módulo de Configuração
-- Jarison
-
-### 5.5. Módulo GUI
-- Victor
-
-### 5.6. Módulo de Comunicação de Rede
-- Matheus
-  
-
-## Fluxograma da aplicação (Arquitetura)
-Link: https://lucid.app/lucidchart/12082aa2-ffb3-4a34-bfcb-d6fd9770d4ca/edit?beaconFlowId=A5BDFFA03A4A1A5E&invitationId=inv_10730c73-8163-4eee-b5f3-1e05ed490456&page=0_0#
