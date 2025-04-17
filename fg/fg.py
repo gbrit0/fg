@@ -1,4 +1,5 @@
 import typer
+import appinstall
 
 #INTRUÇOES DE TESTE
 #INSTALAR A BIBLIOTECA typer
@@ -39,7 +40,8 @@ def gui():
 @app.command()
 def install(version: str = versionHelp):
     """Installs a specific version of the FHIR Guard application."""
-    print(f"Instalando a versão {version}")
+    code = appinstall.install()
+    print(code)
 
 @app.command()
 def update():
@@ -97,9 +99,10 @@ See Configuration Reference for all available options."""
 #Application control
 
 @app.command()
-def start(version: str = versionHelp):
+def start(version: str = versionHelp, args : str = None):
     """Starts a specific version of the application (must be installed first)."""
-    print("Application started successfully. PID: 1234")
+    code = appinstall.start_validator(args)
+    print(code)
 
 @app.command()
 def stop(pid:int = pidHelp):
