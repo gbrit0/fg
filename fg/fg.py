@@ -1,6 +1,6 @@
 import typer
 import appinstall
-import gui
+import fgGui
 
 #INTRUÇOES DE TESTE
 #INSTALAR A BIBLIOTECA typer
@@ -35,7 +35,7 @@ def available():
 @app.command()
 def gui():
     """Launches the graphical user interface."""
-    gui
+    fgGui.main()
 
 #Installation management
 @app.command()

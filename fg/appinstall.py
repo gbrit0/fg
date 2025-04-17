@@ -213,7 +213,8 @@ def start_validator(fhir_file_to_validate=None): #se o usuario quiser passar um 
             check=True,
             capture_output=True,
             text=True,
-            env=env
+            env=env,
+            shell=(os.name == 'nt')# usa shell apenas no windows
         )
         
         return result.stdout
