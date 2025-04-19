@@ -1,4 +1,6 @@
 import typer
+
+import appcontroll
 import appinstall
 import fgGui
 
@@ -102,7 +104,7 @@ See Configuration Reference for all available options."""
 @app.command()
 def start(version: str = versionHelp, args : str = None):
     """Starts a specific version of the application (must be installed first)."""
-    code = appinstall.start_validator(args)
+    code = appcontroll.start_validator(args)
     print(code)
 
 @app.command()
