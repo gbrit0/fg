@@ -63,7 +63,7 @@ def start_validator(fhir_file_to_validate=None): #se o usuario quiser passar um 
         # Configura o ambiente para incluir o JDK instalado
         env = os.environ.copy()
         env["JAVA_HOME"] = jdk_path
-        env["PATH"] = f"{os.path.join(jdk_path, 'bin')}:{env.get('PATH', '')}"
+        env["PATH"] = f"{os.path.join(jdk_path, 'bin')}:{env.get('PATH', '')}" #pode ser que de erro no windows, se der trocar o : por um ;
         
         # Executa o comando
         result = subprocess.run(
@@ -72,7 +72,7 @@ def start_validator(fhir_file_to_validate=None): #se o usuario quiser passar um 
             capture_output=True,
             text=True,
             env=env,
-            shell=(os.name == 'nt')# usa shell apenas no windows
+            shell= False# funcionou como false no windows, como True dava erro
         )
         
         return result.stdout
@@ -81,3 +81,4 @@ def start_validator(fhir_file_to_validate=None): #se o usuario quiser passar um 
         return f"Erro ao executar o validator: {e.stderr}"
     except Exception as e:
         return f"Erro inesperado: {str(e)}"
+    
