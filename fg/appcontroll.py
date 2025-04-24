@@ -27,7 +27,11 @@ def osCommand(jdk_path:str):
 
 
 
-def start_validator(fhir_file_to_validate=None): #se o usuario quiser passar um arquivo pra validar por exemplo, se none so inicia o validator
+def start(
+        version: str,
+        jar_name:str,
+        fhir_file_to_validate=None
+        ): #se o usuario quiser passar um arquivo pra validar por exemplo, se none so inicia o validator
     """
     Inicia o validator FHIR CLI.
     
@@ -72,7 +76,7 @@ def start_validator(fhir_file_to_validate=None): #se o usuario quiser passar um 
             capture_output=True,
             text=True,
             env=env,
-            shell= False# funcionou como false no windows, como True dava erro
+            shell= False# funcionou como false no windows, como True dava erro de que o comando fg nao estava definido, algo assim
         )
         
         return result.stdout

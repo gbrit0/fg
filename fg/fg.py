@@ -12,7 +12,10 @@ import fgGui
 
 app = typer.Typer()
 
-versionHelp = typer.Option(None,"-v","--version", help= "Versão do FHIR Guard.")
+
+#DEFINIÇÃO DOS ARGUMENTOS E SEUS COMENTARIOS
+versionHelp = typer.Argument(help= "Versão do FHIR Guard.")#typer.argument sao argumentos obrigatorios
+jar_nameHelp = typer.Argument(help= "The name of the jar file")
 pidHelp = typer.Argument(help = "PID can be obtained from the 'fg status' command.")
 tailHelp = typer.Option(None, "--tail", "-t", help="Shows the last n lines of the logs. If not specified, shows all logs.")
 followHelp = typer.Option(False, "--follow", "-f", help="Follows the log output in real-time.")
@@ -102,9 +105,18 @@ See Configuration Reference for all available options."""
 #Application control
 
 @app.command()
-def start(version: str = versionHelp, args : str = None):
+def start(
+    version: str = versionHelp,
+    jar_name:str = jar_nameHelp, #um comadno obrigatorio nunca pode vir depois de um não obrigatorio
+    args : str = None
+):
     """Starts a specific version of the application (must be installed first)."""
-    code = appcontroll.start_validator(args)
+    code = appcontroll.start(
+        version,
+        jar_name,
+        args
+    )
+    
     print(code)
 
 @app.command()
