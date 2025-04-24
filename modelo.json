@@ -1,0 +1,34 @@
+{
+   "1.0.0": {
+      "jdkUrl": {
+         "windows": "https://download.oracle.com/java/17/latest/jdk-17_windows-x64_bin.exe",
+         "linux": "https://download.oracle.com/java/17/latest/jdk-17_linux-x64_bin.tar.gz",
+         "mac": "https://download.oracle.com/java/17/latest/jdk-17_macos-x64_bin.dmg"
+      },
+      "description": "Descrição da versão 1.0.0",
+      "dependencies": [
+         {
+            "name": "xpto",
+            "description": "Descrição do que se trata o xpto",
+            "localName": "xpto.jar", // localName deve existir para arquivos jar que possam ter o mesmo nome evitando conflitos de arquivos em um mesmo diretório
+            "url": "https://www.xpto.com/download/name.jar",
+            "flag": "--file x"
+         },
+         {
+            "name": "asdf",
+            "description": "Descrição do que se trata o asdf",
+            "localName": "asdf.jar", // localName deve existir para arquivos jar que possam ter o mesmo nome evitando conflitos de arquivos em um mesmo diretório
+            "url": "https://www.asdf.com/download/name.jar",
+            "flag": "--file y"
+         },
+         {
+            "name": "x",
+            "url": "https://www.xpto.com/download/name.pdf" // Adicionar no repo github para ter referência de uso. Fazer o download e colocar no diretório do projeto.
+         },
+         {
+            "name": "y",
+            "url": "https://www.xpto.com/download/name2.pdf"
+         }
+      ]
+   }
+}
