@@ -107,8 +107,8 @@ See Configuration Reference for all available options."""
 @app.command()
 def start(
     version: str = versionHelp,
-    jar_name:str = jar_nameHelp, #um comadno obrigatorio nunca pode vir depois de um não obrigatorio
-    args : str = None
+    jar_name:str = jar_nameHelp, #um comando obrigatorio nunca pode vir depois de um não obrigatorio
+    args : list[str] = typer.Argument(None, help="Additional arguments for the application jar aplication"),
 ):
     """Starts a specific version of the application (must be installed first)."""
     code = appcontroll.start(
