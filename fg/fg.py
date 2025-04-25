@@ -1,8 +1,8 @@
 import typer
 
-import appcontroll
-import appinstall
-import fgGui
+import controller
+import manager
+from fg_gui import fgGui
 
 #INTRUÇOES DE TESTE
 #INSTALAR A BIBLIOTECA typer
@@ -46,7 +46,7 @@ def gui():
 @app.command()
 def install(version: str = versionHelp):
     """Installs a specific version of the FHIR Guard application."""
-    code = appinstall.install()
+    code = manager.install()
     print(code)
 
 @app.command()
@@ -111,7 +111,7 @@ def start(
     args : list[str] = typer.Argument(None, help="Additional arguments for the application jar aplication"),
 ):
     """Starts a specific version of the application (must be installed first)."""
-    code = appcontroll.start(
+    code = controller.start(
         version,
         jar_name,
         args

@@ -1,9 +1,9 @@
 import tkinter as tk
 from tkinter import messagebox
-import appinstall
+import manager
 
 def instalar():
-    resultado = appinstall.install()
+    resultado = manager.install()
     messagebox.showinfo("Instalação", resultado)
 
 def main():
