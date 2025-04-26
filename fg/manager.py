@@ -18,79 +18,106 @@ def get_file_extension(url: str) -> str:
     _, extension = os.path.splitext(filename)
     return extension.lower()  # Retorna em minúsculas para consistência
 
+def download_com_progresso(url: str, destino: str):
+    response = requests.get(url, stream=True)
+    total = int(response.headers.get('content-length', 0))
+    baixado = 0
+    bloco = 1024 * 32  # 32 KB
 
-def install(
-        version: str
-):
-    
+    with open(destino, 'wb') as arquivo:
+        for dado in response.iter_content(chunk_size=bloco):
+            arquivo.write(dado)
+            baixado += len(dado)
+            porcentagem = (baixado / total) * 100 if total else 0
+            print(f"\r📥 Baixando: {porcentagem:6.2f}%", end='')
+
+    print(" ✅")  # Finaliza a linha ao concluir
+
+def extrair_com_progresso_tar(path_compactado: str, destino: str):
+    with tarfile.open(path_compactado, 'r:gz') as tar:
+        membros = tar.getmembers()
+        total = len(membros)
+        for i, membro in enumerate(membros, 1):
+            tar.extract(membro, path=destino)
+            porcentagem = (i / total) * 100
+            print(f"\r📦 Extraindo .tar.gz: {porcentagem:6.2f}%", end='')
+    print(" ✅")
+
+def extrair_com_progresso_zip(path_compactado: str, destino: str):
+    with zipfile.ZipFile(path_compactado, 'r') as zipf:
+        membros = zipf.infolist()
+        total = len(membros)
+        for i, membro in enumerate(membros, 1):
+            zipf.extract(membro, path=destino)
+            porcentagem = (i / total) * 100
+            print(f"\r📦 Extraindo .zip: {porcentagem:6.2f}%", end='')
+    print(" ✅")
+
+def install(version: str):
+    print(f"🟡 Iniciando instalação da versão {version}...")
 
     homePath = pathControll.home_path()
+    pathOfDownload = os.path.join(homePath, version)
+    jdkPath = os.path.join(pathOfDownload, "jdk")
 
-    pathOfDownload = os.path.join(homePath,version)
-
-    jdkPath = os.path.join(pathOfDownload,"jdk")
-
-        
-    if os.path.exists(pathOfDownload): #se a pasta de download existir ela apaga tudo
+    if os.path.exists(pathOfDownload):
+        print(f"🔄 Removendo diretório existente: {pathOfDownload}")
         shutil.rmtree(pathOfDownload)
+
+    print(f"📁 Criando diretório: {pathOfDownload}")
     os.makedirs(pathOfDownload, exist_ok=True)
 
-    jdkUrl =  pathControll.getJdkUrl(version)
-    ## PARA TAR.GZ
-    if get_file_extension(jdkUrl) == '.gz':
-        jdkCompactadoPath = os.path.join(jdkPath,"jdk.tar.gz")
+    jdkUrl = pathControll.getJdkUrl(version)
+    ext = get_file_extension(jdkUrl)
 
+    if ext == '.gz':
+        print(f"⬇️ Baixando JDK (.tar.gz) de: {jdkUrl}")
+        jdkCompactadoPath = os.path.join(jdkPath, "jdk.tar.gz")
         os.makedirs(jdkPath, exist_ok=True)
-        jdkRequest = requests.get(jdkUrl)
-        
-        with open(jdkCompactadoPath, 'wb') as file:
-            file.write(jdkRequest.content)
-        
-        with tarfile.open(jdkCompactadoPath, 'r:gz') as file:
-            file.extractall(jdkPath)
+        download_com_progresso(jdkUrl, jdkCompactadoPath)
 
-    ## PARA .ZIP
-    elif get_file_extension(jdkUrl) == '.zip':
-        jdkCompactadoPath = os.path.join(jdkPath,"jdk.zip")
 
+        print(f"📦 Extraindo arquivo: {jdkCompactadoPath}")
+        extrair_com_progresso_tar(jdkCompactadoPath, jdkPath)
+
+
+    elif ext == '.zip':
+        print(f"⬇️ Baixando JDK (.zip) de: {jdkUrl}")
+        jdkCompactadoPath = os.path.join(jdkPath, "jdk.zip")
         os.makedirs(jdkPath, exist_ok=True)
-        jdkRequest = requests.get(jdkUrl)
-        
-        with open(jdkCompactadoPath, 'wb') as file:
-            file.write(jdkRequest.content)
+        download_com_progresso(jdkUrl, jdkCompactadoPath)
 
-        with zipfile.ZipFile(jdkCompactadoPath, 'r') as file:
-            file.extractall(jdkPath)
-    
+
+        print(f"📦 Extraindo arquivo: {jdkCompactadoPath}")
+        extrair_com_progresso_zip(jdkCompactadoPath, jdkPath)
+
+
+    print("🧹 Removendo arquivo compactado...")
     os.remove(jdkCompactadoPath)
 
-    #Organizar a estrutura de diretórios removendo a  subpasta jdk-24.0.1
-    # O JDK geralmente é extraído em uma subpasta (ex: 'jdk-24.0.1')
     jdk_contents = os.listdir(jdkPath)
-    if len(jdk_contents) == 1:  # Se houver apenas 1 item na pasta
+    if len(jdk_contents) == 1:
         subdir = os.path.join(jdkPath, jdk_contents[0])
-        if os.path.isdir(subdir):  # E esse item for uma pasta
-            # Move todos os arquivos para o diretório principal
+        if os.path.isdir(subdir):
+            print(f"📂 Reorganizando estrutura: movendo arquivos de {subdir} para {jdkPath}")
             for item in os.listdir(subdir):
                 os.rename(
                     os.path.join(subdir, item),
                     os.path.join(jdkPath, item)
                 )
-            # Remove a subpasta vazia
             os.rmdir(subdir)
 
-    ## DOWNLOAD DE TODAS AS DEPENDENCIAS UMA A UMA
+    print("⬇️ Baixando dependências...")
     dependencies = pathControll.getDependencies(version)
-
-    for  dependencie in dependencies:
+    for dependencie in dependencies:
         dependenciePath = os.path.join(pathOfDownload, dependencie['localName'])
-
         dependencieUrl = dependencie['url']
+        print(f"   🔹 {dependencie['localName']} de {dependencieUrl}")
+        download_com_progresso(dependencieUrl, dependenciePath)
 
-        dependencieRequest = requests.get(dependencieUrl)
 
-        with open(dependenciePath, 'wb') as file:
-            file.write(dependencieRequest.content)
+    print("✅ Instalação concluída com sucesso.")
+
 
 
 
