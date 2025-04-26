@@ -77,7 +77,20 @@ def install(
                     os.path.join(jdkPath, item)
                 )
             # Remove a subpasta vazia
-            os.rmdir(subdir)    
+            os.rmdir(subdir)
+
+    ## DOWNLOAD DE TODAS AS DEPENDENCIAS UMA A UMA
+    dependencies = pathControll.getDependencies(version)
+
+    for  dependencie in dependencies:
+        dependenciePath = os.path.join(pathOfDownload, dependencie['localName'])
+
+        dependencieUrl = dependencie['url']
+
+        dependencieRequest = requests.get(dependencieUrl)
+
+        with open(dependenciePath, 'wb') as file:
+            file.write(dependencieRequest.content)
 
 
 
