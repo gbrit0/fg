@@ -120,9 +120,18 @@ def install(version: str):
 
 
 
+def uninstall(
+        version: str
+):
+    homePath = pathControll.home_path()
 
+    versionPath = os.path.join(homePath,version)
+
+    if os.path.exists(versionPath): #se a pasta de download existir ela apaga tudo
+        shutil.rmtree(versionPath)
+    
 
 if __name__ == "__main__":
     install(
-        "6.5.18"
+        "6.5.19"
     )
