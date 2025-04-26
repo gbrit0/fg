@@ -1,5 +1,6 @@
 {
    "1.0.0": {
+      "releaseDate" : "25/10/2025",
       "jdkUrl": {
          "windows": "https://download.oracle.com/java/17/latest/jdk-17_windows-x64_bin.exe",
          "linux": "https://download.oracle.com/java/17/latest/jdk-17_linux-x64_bin.tar.gz",
