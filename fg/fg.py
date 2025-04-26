@@ -1,6 +1,7 @@
 import typer
 from typing import List
 
+import pathControll
 import controller
 import manager
 from fg_gui import fgGui
@@ -28,14 +29,11 @@ followHelp = typer.Option(False, "--follow", "-f", help="Follows the log output 
 def available():
     """Lists all available FHIR Guard versions, regardless of what is installed in the working directory."""
 
-    print(
-"""Version     Release Date
---------    ------------
-2.0.0       2024-04-05
-1.2.0       2024-03-10
-1.1.0       2024-02-22
-1.0.0       2024-01-15"""
-)
+    print("Version     Release Date")
+    print("--------    ------------")
+
+    for message in pathControll.available():
+        print(message)
 
 @app.command()
 def gui():
@@ -58,7 +56,11 @@ def install(
 @app.command()
 def update():
     """If a newer version exists, downloads, installs it and sets it as the current default."""
-    print("Updated to version [new version]. This is now the default version.")
+    for message in manager.update():
+        if message.startswith("\r"):
+            print(message, end="", flush=True)
+        else:
+            print(message)
 
 @app.command()
 def uninstall(
@@ -79,12 +81,10 @@ def uninstall(
 @app.command()
 def list():
     """Shows all installed versions of the application."""
-    print(
-"""Installed versions:
-* 1.1.0 (default - most recent)
-  1.0.0
-  0.9.0"""
-  )
+    print("Installed versions:")
+
+    for message in pathControll.list():
+        print(message)
     
 @app.command()
 def config(version: str = versionHelp):

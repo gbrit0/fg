@@ -6,7 +6,7 @@ fhir-guard/
 │   ├── controller.py          # Start/stop/status de instâncias
 │   ├── monitor.py             # Monitoramento (CPU, memória, logs)
 │   ├── config.py              # Leitura e edição do config.yaml
-│   └── registry.py            # Consulta e download de versões
+│   └── pathControll.py            # Consulta e download de versões
 │
 ├── fg_gui/                    # Interface gráfica (opcional)
 │   ├── app.py                 # Inicializador da GUI

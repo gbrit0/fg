@@ -125,6 +125,12 @@ def install(version: str) -> Generator[str, None, None]:
         yield f"❌ Erro durante a instalação: {str(e)}"
         return
 
+
+def update():
+    for message in install(pathControll.mostRecentVersion()):
+        yield message
+
+
 def uninstall(version: str) -> Generator[str, None, None]:
     try:
         yield f"🗑️ Iniciando desinstalação da versão {version}..."
