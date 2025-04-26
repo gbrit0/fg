@@ -15,6 +15,7 @@ def ola():
     }
 )
 def install(
+    valor : int,
     args : list[str] = typer.Argument(None, help="Additional arguments for the application"), #ctx: typer.Context = typer.Context() isso pega todos os argumentos de contexto,
 ):
     start.start(args)

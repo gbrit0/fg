@@ -1,4 +1,5 @@
 import typer
+from typing import List
 
 import controller
 import manager
@@ -11,7 +12,6 @@ from fg_gui import fgGui
 #USAR O COMANDO python fg/fg.py [command] --help PARA MOSTRAR A LISTA DE ARGUMENTOS E OPÇÕES EX: python fg.py start --help
 
 app = typer.Typer()
-
 
 #DEFINIÇÃO DOS ARGUMENTOS E SEUS COMENTARIOS
 versionHelp = typer.Argument(help= "Versão do FHIR Guard.")#typer.argument sao argumentos obrigatorios
@@ -44,10 +44,16 @@ def gui():
 
 #Installation management
 @app.command()
-def install(version: str = versionHelp):
+def install(
+    version: str = versionHelp
+    ):
     """Installs a specific version of the FHIR Guard application."""
-    code = manager.install()
-    print(code)
+    for message in manager.install(version):
+        if message.startswith("\r"):
+            print(message, end="", flush=True)
+        else:
+            print(message)
+    
 
 @app.command()
 def update():
@@ -55,11 +61,19 @@ def update():
     print("Updated to version [new version]. This is now the default version.")
 
 @app.command()
-def uninstall(version: str = versionHelp):
+def uninstall(
+    version: str = versionHelp
+    ):
     """Removes a specific version of the application."""
     
     if input(f"Confirm uninstallation of version {version}? (y/N)") == 'y':
-        print(f"Version {version} uninstalled successfully")
+        for message in  manager.uninstall(version):
+            if message.startswith("\r"):
+                print(message, end="", flush=True)
+            else:
+                print(message)
+    else:
+        print("Desinstalação cancelada!")
 
 
 @app.command()
@@ -103,26 +117,32 @@ See Configuration Reference for all available options."""
     )
 
 #Application control
-
-@app.command()
+@app.command(
+        context_settings={
+            "allow_extra_args": True, "ignore_unknown_options": True
+        }
+)
 def start(
     version: str = versionHelp,
     jar_name:str = jar_nameHelp, #um comando obrigatorio nunca pode vir depois de um não obrigatorio
-    args : list[str] = typer.Argument(None, help="Additional arguments for the application jar aplication"),
+    args : List[str] = typer.Argument(None, help="Additional arguments for the application")
 ):
     """Starts a specific version of the application (must be installed first)."""
-    code = controller.start(
+    
+    print(
+        controller.start(
         version,
         jar_name,
         args
     )
-    
-    print(code)
+    )
 
 @app.command()
 def stop(pid:int = pidHelp):
     """Stops a running instance of the application."""
-    print(f"Application instance (PID: {pid}) stopped successfully")
+    print(
+        controller.stop(pid)
+    )
 
 
 #Monitoring and diagnostics
