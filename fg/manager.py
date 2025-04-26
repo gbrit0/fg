@@ -120,18 +120,22 @@ def install(version: str):
 
 
 
-def uninstall(
-        version: str
-):
+def uninstall(version: str):
+    print(f"🗑️ Iniciando desinstalação da versão {version}...")
+
     homePath = pathControll.home_path()
+    versionPath = os.path.join(homePath, version)
 
-    versionPath = os.path.join(homePath,version)
-
-    if os.path.exists(versionPath): #se a pasta de download existir ela apaga tudo
+    if os.path.exists(versionPath):
+        print(f"🔄 Removendo diretório: {versionPath}")
         shutil.rmtree(versionPath)
+        print(f"✅ Versão {version} desinstalada com sucesso.")
+    else:
+        print(f"⚠️ Versão {version} não encontrada em: {versionPath}")
+
     
 
 if __name__ == "__main__":
-    install(
-        "6.5.19"
+    uninstall(
+        "6.5.18"
     )
