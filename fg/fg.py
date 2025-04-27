@@ -4,6 +4,7 @@ from typing import List
 import pathControll
 import controller
 import manager
+import monitor
 from fg_gui import fgGui
 
 #INTRUÇOES DE TESTE
@@ -12,7 +13,7 @@ from fg_gui import fgGui
 #USAR O COMANDO python fg/fg.py [command] PARA EXECURAR UM COMANDO LISTADO EX: python fg.py start
 #USAR O COMANDO python fg/fg.py [command] --help PARA MOSTRAR A LISTA DE ARGUMENTOS E OPÇÕES EX: python fg.py start --help
 
-app = typer.Typer()
+app = typer.Typer(no_args_is_help=True)
 
 #DEFINIÇÃO DOS ARGUMENTOS E SEUS COMENTARIOS
 versionHelp = typer.Argument(help= "Versão do FHIR Guard.")#typer.argument sao argumentos obrigatorios
@@ -165,12 +166,9 @@ def stop(pid:int = pidHelp):
 @app.command()
 def status():
     """Shows the current status of all running instances of the application."""
-    print(
-"""PID     Version  Port   Uptime   Memory   CPU   Tasks
-1234    1.1.0    8080   2h       256MB    2%    10
-5678    1.0.0    8081   30m      128MB    1%    5"""
-        )
-    
+    print("PID      Version   Port   Uptime   Memory       CPU       Tasks")
+    for message in monitor.status():
+        print(message)
 
 @app.command()
 def logs(pid:int = pidHelp, tail:int = tailHelp, follow:bool = followHelp):

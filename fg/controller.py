@@ -6,6 +6,7 @@ import platform
 import signal
 
 import pathControll
+import monitor
 
 homePath = pathControll.home_path()
 system = platform.system()
@@ -64,6 +65,8 @@ def start(
                 )
             
             pid = process.pid
+            monitor.save_pid(pid,version," ".join(cmd))#juna a lista de comando em uma str
+
             return f"Application started successfully. PID: {pid}"
 
         except subprocess.SubprocessError as e:

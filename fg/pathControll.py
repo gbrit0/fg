@@ -5,10 +5,10 @@ import json
 from typing import Dict, Any, List
 from datetime import datetime
 
+#FG_HOME = os.environ.get("FG_HOME", os.path.expanduser("~")) #tenta pegar a variavel de ambiente, se não existir usa o home mesmo
+FG_HOME = os.environ.get("FG_HOME", "fg") #para testes usar esse pois fica mais facil de vizualizar
 
-FG_HOME = "fg"
-
-installPath = os.path.join(FG_HOME,"fg_app")
+installPath = os.path.join(FG_HOME,".fg")
 
 def set_home_path(
         homePath :str
