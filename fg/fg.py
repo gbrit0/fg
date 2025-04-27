@@ -23,6 +23,21 @@ followHelp = typer.Option(False, "--follow", "-f", help="Follows the log output 
 
 #COMANDOS 
 
+#Global Options
+
+@app.callback()
+def global_options(
+    log_level: str = typer.Option(None, "--log-level", "-l", help="Sets the log level for the fg CLI (debug, info, warn, error)."),
+    working_directory: str = typer.Option(None, "--dir", "-d", help="Specifies the working directory."),
+):
+    if log_level:
+        typer.echo("Modo detalhado ativado!")
+    if working_directory:
+        pathControll.set_home_path(working_directory)
+        typer.echo(f"Using work directiry as {working_directory}")
+
+
+
 #Basic commands
 
 @app.command()

@@ -5,12 +5,23 @@ import json
 from typing import Dict, Any, List
 from datetime import datetime
 
-FG_HOME = "fg/fg_app/"
+
+FG_HOME = "fg"
+
+installPath = os.path.join(FG_HOME,"fg_app")
+
+def set_home_path(
+        homePath :str
+):
+    global FG_HOME, installPath
+    FG_HOME = homePath
+    installPath = os.path.join(FG_HOME,"fg_app")
+
 
 def home_path() -> str:
     """Retorna o caminho base do FHIR Guard."""
     try:
-        return FG_HOME
+        return installPath
     except Exception as e:
         raise RuntimeError(f"Erro ao determinar o caminho base: {str(e)}")
 
