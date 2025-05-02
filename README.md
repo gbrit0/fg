@@ -153,4 +153,35 @@ A arquitetura do sistema será composta pelos seguintes componentes principais:
   
 
 ## Fluxograma da aplicação (Arquitetura)
-Link: https://lucid.app/lucidchart/12082aa2-ffb3-4a34-bfcb-d6fd9770d4ca/edit?beaconFlowId=A5BDFFA03A4A1A5E&invitationId=inv_10730c73-8163-4eee-b5f3-1e05ed490456&page=0_0#
+<a target="_blank" href="https://lucid.app/lucidchart/12082aa2-ffb3-4a34-bfcb-d6fd9770d4ca/edit?beaconFlowId=A5BDFFA03A4A1A5E&invitationId=inv_10730c73-8163-4eee-b5f3-1e05ed490456&page=0_0#">Link</a> da arquitetura no lucidchart
+
+# Histórico de Sprints
+
+### Sprint 1 – Esclarecimentos Iniciais
+Reunião inicial com todos os membros do grupo para alinhar o escopo do projeto.
+
+Discussões sobre os principais objetivos da ferramenta FHIR Guard.
+
+Definição preliminar dos módulos e levantamento de dúvidas sobre tecnologias a serem utilizadas.
+
+Adoção da estratégia de sprints semanais com entregas incrementais.
+
+### Sprint 2 – Planejamento e Divisão do Trabalho
+Divisão oficial dos módulos entre os membros do grupo, conforme suas especializações/interesses.
+
+Escolha das principais bibliotecas e frameworks que serão utilizados no projeto.
+
+### Sprint 3 - Início do Desenvolvimento
+Primeiras implementações de código para os módulos atribuídos.
+
+### Sprint 4 – Estrutura Arquitetural e Gerenciamento de Versões
+Criação da branch arquitetura-inicial, com foco na estrutura base do sistema.
+
+Implementação inicial do módulo de Gerenciamento de Versões
+
+Integração inicial entre o módulo core da CLI e o módulo de versões.
+
+### Sprint 5 – Simulação de Controle da Aplicação
+Adição na branch main do código para simular o controle da aplicação.
+
+Testes iniciais de execução dos comandos da CLI com esses novos recursos.
