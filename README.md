@@ -153,7 +153,7 @@ A arquitetura do sistema será composta pelos seguintes componentes principais:
   
 
 ## Fluxograma da aplicação (Arquitetura)
-<a target="_blank" href="https://lucid.app/lucidchart/12082aa2-ffb3-4a34-bfcb-d6fd9770d4ca/edit?beaconFlowId=A5BDFFA03A4A1A5E&invitationId=inv_10730c73-8163-4eee-b5f3-1e05ed490456&page=0_0#">Link</a> da arquitetura no lucidchart
+<a href="https://lucid.app/lucidchart/12082aa2-ffb3-4a34-bfcb-d6fd9770d4ca/edit?beaconFlowId=A5BDFFA03A4A1A5E&invitationId=inv_10730c73-8163-4eee-b5f3-1e05ed490456&page=0_0#" target="_blank">Link</a> da arquitetura no Lucidchart
 
 # Histórico de Sprints
 
