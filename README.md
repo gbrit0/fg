@@ -185,3 +185,8 @@ Integração inicial entre o módulo core da CLI e o módulo de versões.
 Adição na branch main do código para simular o controle da aplicação.
 
 Testes iniciais de execução dos comandos da CLI com esses novos recursos.
+
+### Sprint 6??? – Estruturação da Base do Projeto Real (GUI + CLI)
+Construção do esqueleto/base do projeto real que incluirá a interface gráfica (GUI).
+
+Implementação dos comandos fundamentais na CLI, seguindo a arquitetura planejada.
