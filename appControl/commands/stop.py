@@ -1,25 +1,21 @@
 from interfaces.command import Command
+import os
+import signal
+
 
 class StopCommand(Command):
-   """
-   Para uma instância da aplicação em execução.
+    """
+    Para uma instância através do PID.
+    """
 
-   PID pode ser obtido do comando `fg status`.
+    def __init__(self, pid):
+        self.pid = pid
 
-   Desligamento gracioso (Gracefull shutdown) com timeout de 10 segundos por padrão;
-
-   Sucesso (em verde): Instância da aplicação (PID: [pid]) parada com sucesso.
-   Falha (em vermelho): Erro ao parar a instância da aplicação (PID: [pid]): [erro].
-   """
-   def __init__(self, pid):
-      """
-      Inicializa o comando de parada com o PID especificado.
-      """
-      super().__init__()
-      self.pid = pid
-
-   def execute(self ):
-      print(f"Parando {self.pid}...")
-      # Lógica de parada do pacote
-      
-      print(f"{self.pid} parado com sucesso.")
+    def execute(self):
+        try:
+            os.kill(self.pid, signal.SIGTERM)
+            print(f"Processo {self.pid} parado com sucesso.")
+        except ProcessLookupError:
+            print(f"Processo {self.pid} não encontrado.")
+        except Exception as e:
+            print(f"Erro ao parar processo: {e}")

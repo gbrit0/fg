@@ -1,29 +1,22 @@
 from interfaces.command import Command
+import shutil
+from pathlib import Path
+
 
 class UninstallCommand(Command):
-   """
-   Remove uma versão específica da aplicação.
+    """
+    Desinstala uma versão específica.
+    """
 
-   Requer confirmação: "Confirma a desinstalação da versão [versão]? (s/n)".
+    def __init__(self, version):
+        self.version = version
 
-   Não pode desinstalar uma versão que esteja rodando.
+    def execute(self):
+        install_dir = Path.home() / ".fg" / self.version
 
-   Sucesso (em verde): "Versão [versão] desinstalada com sucesso."
-   Falha (em vermelho): "Erro ao desinstalar a versão [versão]: [erro]".
-   """
+        if not install_dir.exists():
+            print(f"A versão {self.version} não está instalada.")
+            return
 
-   def __init__(self, version):
-      """
-      Inicializa o comando de desinstalação com a versão especificada.
-      """
-      super().__init__()
-      self.version = version
-
-   def execute(self):
-      """
-      Executa o comando de desinstalação para o pacote especificado.
-      """
-      print(f"Desinstalando {self.version}...")
-      # Lógica de desinstalação do pacote
-      
-      print(f"{self.version} desinstalado com sucesso.")
+        shutil.rmtree(install_dir)
+        print(f"A versão {self.version} foi desinstalada com sucesso.")

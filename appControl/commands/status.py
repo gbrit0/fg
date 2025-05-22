@@ -1,17 +1,23 @@
 from interfaces.command import Command
+import psutil
+
 
 class StatusCommand(Command):
-   """
-   Exibe o status atual de todos as instâncias da aplicação em execução.
+    """
+    Mostra o status das instâncias em execução.
+    """
 
-   Inclui detalhes como PID, versão, porta, uptime, uso de memória, uso de CPU e número de tasks.
+    def execute(self):
+        print("PID     Nome               CPU%   Memória")
+        print("----------------------------------------------")
 
-   Exemplo de saída:
-   PID     Version  Port   Uptime   Memory   CPU   Tasks
-   1234    1.1.0    8080   2h       256MB    2%    10
-   5678    1.0.0    8081   30m      128MB    1%    5
-   """
-
-   def execute(self):
-      print("PID     Version  Port   Uptime   Memory   CPU   Tasks")
-      # Lógica para exibir o status de cada versão
+        for proc in psutil.process_iter(['pid', 'name', 'cpu_percent', 'memory_info']):
+            try:
+                if "fg" in proc.info['name']:
+                    pid = proc.info['pid']
+                    name = proc.info['name']
+                    cpu = proc.cpu_percent(interval=0.1)
+                    mem = proc.memory_info().rss // (1024 * 1024)  # em MB
+                    print(f"{pid:<7} {name:<18} {cpu:<6} {mem} MB")
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                continue

@@ -1,26 +1,46 @@
 from interfaces.command import Command
+import requests
+import zipfile
+import os
+import shutil
+from pathlib import Path
+
 
 class InstallCommand(Command):
-   """
-   Instala uma versão específica do aplicativo.
+    """
+    Instala uma versão específica.
+    """
 
-   Suporta somente versionamento semântico: 'x.y.z' (ex: 1.0.0, 2.1.3).
+    def __init__(self, version):
+        self.version = version
 
-   Cria um arquivo padrão de configuração localizado em $FG_HOME/[version]/config.yaml.
+    def execute(self):
+        try:
+            url = f"https://github.com/gbrit0/fg/releases/download/{self.version}/fg-{self.version}.zip"
+            install_dir = Path.home() / ".fg" / self.version
 
-   Sucesso (em verde): Versão [versão] instalada com sucesso.
-   Falha (em vermelho): Erro ao instalar a versão [versão]: [erro].
-   """
+            if install_dir.exists():
+                print(f"Versão {self.version} já está instalada.")
+                return
 
-   def __init__(self, version):
-      """
-      Inicializa o comando de instalação com a versão especificada.
-      """
-      super().__init__()
-      self.version = version
+            install_dir.mkdir(parents=True, exist_ok=True)
+            zip_path = install_dir / "fg.zip"
 
-   def execute(self):
-      print(f"Instalando {self.version}...")
-      # Lógica de instalação do pacote
+            print(f"Baixando {url}...")
+            response = requests.get(url)
+            if response.status_code != 200:
+                print(f"Versão {self.version} não encontrada.")
+                return
 
-      print(f"{self.version} instalada com sucesso.")
+            with open(zip_path, "wb") as file:
+                file.write(response.content)
+
+            print("Extraindo arquivos...")
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                zip_ref.extractall(install_dir)
+
+            os.remove(zip_path)
+
+            print(f"Versão {self.version} instalada em {install_dir}")
+        except Exception as e:
+            print(f"Erro ao instalar a versão {self.version}: {e}")

@@ -1,16 +1,22 @@
 from interfaces.command import Command
+from pathlib import Path
+
 
 class ListCommand(Command):
-   """
-   Esibe todas as versões da aplicação instaladas.
+    """
+    Lista todas as versões instaladas.
+    """
 
-   A versão mais recente instalada é automaticamente definida como a versão padrão e marcada com um asterisco (*);
+    def execute(self):
+        base_dir = Path.home() / ".fg"
+        if not base_dir.exists():
+            print("Nenhuma versão instalada.")
+            return
 
-   Exemplo:
-   
-      Versões instaladas:
-      * 1.1.0 (padrão - mais recente)
-        1.0.0
-        0.9.0
-   
-   """
+        versions = [d.name for d in base_dir.iterdir() if d.is_dir()]
+        if not versions:
+            print("Nenhuma versão instalada.")
+        else:
+            print("Versões instaladas:")
+            for version in versions:
+                print(f"- {version}")

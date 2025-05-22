@@ -1,25 +1,30 @@
 from interfaces.command import Command
+from pathlib import Path
+import subprocess
+
 
 class StartCommand(Command):
-   """
-   Inicializa uma versão específica da aplicação (previamente instalada).
+    """
+    Inicia uma versão específica.
+    """
 
-   Valida a configuração antes de iniciar.
+    def __init__(self, version):
+        self.version = version
 
-   Sucesso (em verde): Aplicação incializada com sucesso. PID: [pid].
-   Erro (em vermelho): Erro ao iniciar a aplicação: [erro].
-   """
+    def execute(self):
+        install_dir = Path.home() / ".fg" / self.version
+        binary = install_dir / "fg"
 
-   def __init__(self, version):
-      """
-      Inicializa o comando de inicialização com a versão especificada.
-      """
-      super.__init__()
-      self.version = version
+        if not binary.exists():
+            print(f"Versão {self.version} não está instalada.")
+            return
 
-   def execute(self):
-      """Inicializa uma versão específica."""
-      print(f"Iniciando {self.version}...")
-      # Lógica de inicialização do pacote
-      
-      print(f"{self.version} iniciado com sucesso.")
+        try:
+            process = subprocess.Popen(
+                [str(binary)],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            print(f"Versão {self.version} iniciada com PID {process.pid}")
+        except Exception as e:
+            print(f"Erro ao iniciar: {e}")

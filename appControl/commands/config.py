@@ -1,46 +1,27 @@
 from interfaces.command import Command
+from pathlib import Path
+import yaml
+
 
 class ConfigCommand(Command):
-   """
-   Exibe (somente leitura) a configuração detalhada de uma versão específica da aplicação.
+    """
+    Exibe a configuração da versão.
+    """
 
-   COnfigurações só podem ser modificadas editando manual o arquivo fonte YAML localizado em $FG_HOME/[version]/config.yaml.
+    def __init__(self, version):
+        self.version = version
 
-   Exemplo de saída:
+    def execute(self):
+        config_file = Path.home() / ".fg" / self.version / "config.yaml"
 
-      Configuration for version 1.1.0:
-      Source file: /home/user/.fg/versions/1.1.0/config.yaml
+        if not config_file.exists():
+            print(f"Configuração não encontrada para a versão {self.version}.")
+            return
 
-      Current settings (read-only):
-      Server:
-      - Host: 0.0.0.0
-      - Port: 8080
-      - Read Timeout: 30s
-      - Write Timeout: 30s
-
-      Security:
-      - TLS: enabled
-      - Auth: enabled
-      - JWT Expiry: 24h
-
-      Resources:
-      - Max Memory: 1024MB
-      - Max CPU: 2
-      - Workers: 10
-
-      [...]
-
-      To modify these settings, edit the YAML file directly.
-      See Configuration Reference for all available options.
-   """
-
-   def __init__(self, version):
-      """
-      Inicializa o comando de busca de configuração com a versão especificada.
-      """
-      super().__init__()
-      self.version = version
-
-   def execute(self):
-      print(f"Exibindo configuração para a versão {self.version}...")
-      # Lógica para exibir a configuração do pacote
+        try:
+            with open(config_file, "r") as file:
+                config = yaml.safe_load(file)
+                print(f"Configuração para {self.version}:")
+                print(yaml.dump(config, sort_keys=False))
+        except Exception as e:
+            print(f"Erro ao ler configuração: {e}")

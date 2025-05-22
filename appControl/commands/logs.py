@@ -1,27 +1,28 @@
 from interfaces.command import Command
+import subprocess
+
 
 class LogsCommand(Command):
-   """
-   Exibe os logs de uma versão em execução específica.
+    """
+    Exibe os logs de um PID.
+    """
 
-   Admite opções:
-      - --tail <n>: Exibe apenas as últimas n linhas dos logs.
-      - --follow: Atualiza os logs em tempo real.
+    def __init__(self, pid, tail=None, follow=False):
+        self.pid = pid
+        self.tail = tail
+        self.follow = follow
 
-   Logs são armazenados na localização especificada no arquivo config.yaml.
-   """
+    def execute(self):
+        log_file = f"/var/log/fg/{self.pid}.log"  # Depende de onde os logs são gravados
 
-   def __init__(self, pid):
-      """
-      Inicializa o comando de exibição de logs com o PID da versão em execução.
-      """
-      super().__init__()
-      self.pid = pid
+        cmd = ["tail"]
+        if self.tail:
+            cmd += ["-n", str(self.tail)]
+        if self.follow:
+            cmd.append("-f")
+        cmd.append(log_file)
 
-   def execute(self):
-      """
-      Executa o comando de exibição de logs para o PID especificado.
-      """
-      print(f"Exibindo logs para {self.pid}...")
-      # Lógica de exibição de logs do pacote
-      
+        try:
+            subprocess.run(cmd)
+        except Exception as e:
+            print(f"Erro ao ler logs: {e}")
