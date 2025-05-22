@@ -3,6 +3,7 @@ import requests
 import tarfile
 import zipfile
 import shutil
+from classes import message
 from typing import Generator
 
 import pathControll
@@ -25,9 +26,9 @@ def download_com_progresso(url: str, destino: str) -> Generator[str, None, None]
             arquivo.write(dado)
             baixado += len(dado)
             porcentagem = (baixado / total) * 100 if total else 0
-            yield f"\r📥 Baixando: {porcentagem:6.2f}%"
+            yield message.Message(message.Status.OK, f"\r📥 Baixando: {porcentagem:6.2f}%", porcentagem )
     
-    yield " ✅"
+    yield message.Message(message.Status.OK, " ✅", None)
 
 def extrair_com_progresso_tar(path_compactado: str, destino: str) -> Generator[str, None, None]:
     with tarfile.open(path_compactado, 'r:gz') as tar:
@@ -36,8 +37,9 @@ def extrair_com_progresso_tar(path_compactado: str, destino: str) -> Generator[s
         for i, membro in enumerate(membros, 1):
             tar.extract(membro, path=destino)
             porcentagem = (i / total) * 100
-            yield f"\r📦 Extraindo .tar.gz: {porcentagem:6.2f}%"
-    yield " ✅"
+            yield message.Message(message.Status.OK, f"\r📦 Extraindo .tar.gz: {porcentagem:6.2f}%", porcentagem )
+            
+    yield message.Message(message.Status.OK, " ✅", None)
 
 def extrair_com_progresso_zip(path_compactado: str, destino: str) -> Generator[str, None, None]:
     with zipfile.ZipFile(path_compactado, 'r') as zipf:
@@ -46,83 +48,83 @@ def extrair_com_progresso_zip(path_compactado: str, destino: str) -> Generator[s
         for i, membro in enumerate(membros, 1):
             zipf.extract(membro, path=destino)
             porcentagem = (i / total) * 100
-            yield f"\r📦 Extraindo .zip: {porcentagem:6.2f}%"
-    yield " ✅"
+            yield message.Message(message.Status.OK, f"\r📦 Extraindo .zip: {porcentagem:6.2f}%", porcentagem )
+    yield message.Message(message.Status.OK, " ✅", None)
 
 def install(version: str) -> Generator[str, None, None]:
-    try:
-        yield f"🟡 Iniciando instalação da versão {version}..."
+    try: 
+        yield message.Message(message.Status.OK,f"🟡 Iniciando instalação da versão {version}...", None)
 
         homePath = pathControll.home_path()
         pathOfDownload = os.path.join(homePath, version)
         jdkPath = os.path.join(pathOfDownload, "jdk")
 
         if os.path.exists(pathOfDownload):
-            yield f"🔄 Removendo diretório existente: {pathOfDownload}"
-            shutil.rmtree(pathOfDownload)
+            raise Exception("A versão já foi instalada")
 
-        yield f"📁 Criando diretório: {pathOfDownload}"
+        yield message.Message(message.Status.OK, f"📁 Criando diretório: {pathOfDownload}",None)
+        
         os.makedirs(pathOfDownload, exist_ok=True)
 
         jdkUrl = pathControll.getJdkUrl(version)
         ext = get_file_extension(jdkUrl)
 
-        if ext == '.gz':
-            yield f"⬇️ Baixando JDK (.tar.gz) de: {jdkUrl}"
+        if ext == '.gz': 
+            yield message.Message(message.Status.OK,f"⬇️ Baixando JDK (.tar.gz) de: {jdkUrl}",None)
             jdkCompactadoPath = os.path.join(jdkPath, "jdk.tar.gz")
             os.makedirs(jdkPath, exist_ok=True)
             
             for progresso in download_com_progresso(jdkUrl, jdkCompactadoPath):
                 yield progresso
 
-            yield f"📦 Extraindo arquivo: {jdkCompactadoPath}"
+            yield message.Message(message.Status.OK,f"📦 Extraindo arquivo: {jdkCompactadoPath}",None)
+            
             for progresso in extrair_com_progresso_tar(jdkCompactadoPath, jdkPath):
                 yield progresso
 
         elif ext == '.zip':
-            yield f"⬇️ Baixando JDK (.zip) de: {jdkUrl}"
+            yield message.Message(message.Status.OK,f"⬇️ Baixando JDK (.zip) de: {jdkUrl}",None)
             jdkCompactadoPath = os.path.join(jdkPath, "jdk.zip")
             os.makedirs(jdkPath, exist_ok=True)
             
             for progresso in download_com_progresso(jdkUrl, jdkCompactadoPath):
                 yield progresso
 
-            yield f"📦 Extraindo arquivo: {jdkCompactadoPath}"
+            yield message.Message(message.Status.OK,f"📦 Extraindo arquivo: {jdkCompactadoPath}",None)
             for progresso in extrair_com_progresso_zip(jdkCompactadoPath, jdkPath):
                 yield progresso
 
-        yield "🧹 Removendo arquivo compactado..."
         os.remove(jdkCompactadoPath)
 
         jdk_contents = os.listdir(jdkPath)
         if len(jdk_contents) == 1:
             subdir = os.path.join(jdkPath, jdk_contents[0])
             if os.path.isdir(subdir):
-                yield f"📂 Reorganizando estrutura: movendo arquivos de {subdir} para {jdkPath}"
                 for item in os.listdir(subdir):
                     os.rename(
                         os.path.join(subdir, item),
                         os.path.join(jdkPath, item)
                     )
-                os.rmdir(subdir)
+                shutil.rmtree(subdir)
 
-        yield "⬇️ Baixando dependências..."
+        
+        yield message.Message(message.Status.OK,"⬇️ Baixando dependências...",None)
+        
         dependencies = pathControll.getDependencies(version)
         for dependencie in dependencies:
             dependenciePath = os.path.join(pathOfDownload, dependencie['localName'])
             dependencieUrl = dependencie['url']
-            yield f"   🔹 {dependencie['localName']} de {dependencieUrl}"
+            yield message.Message(message.Status.OK,f"   🔹 {dependencie['localName']} de {dependencieUrl}",None)
             for progresso in download_com_progresso(dependencieUrl, dependenciePath):
                 yield progresso
 
-        yield "✅ Instalação concluída com sucesso."
+        yield message.Message(message.Status.OK,"✅ Instalação concluída com sucesso.",None)
         return
     
     except Exception as e:
         if os.path.exists(pathOfDownload):
-            yield f"🔄 Removendo diretório existente: {pathOfDownload}"
             shutil.rmtree(pathOfDownload)
-        yield f"❌ Erro durante a instalação: {str(e)}"
+        yield message.Message(message.Status.ERRO,f"❌ Erro durante a instalação: {str(e)}",str(e))
         return
 
 
@@ -151,9 +153,19 @@ def uninstall(version: str) -> Generator[str, None, None]:
         yield f"❌ Erro durante a desinstalação: {str(e)}"
         return
 
+
+def toRed(s:str):
+    return "\033[91m" + s + "\033[0m"
+
 if __name__ == "__main__":
-    for message in install("6.5.1"):
-        if message.startswith("\r"):
-            print(message, end="", flush=True)
+    for msg in install("6.5.1"):
+        if isinstance(msg, message.Message):
+            if msg.mensagem.startswith("\r"):
+                print(msg.mensagem, end="", flush=True)
+            else:
+                if msg.status == message.Status.ERRO:
+                    print(toRed(msg.mensagem))
+                else:
+                    print(msg.mensagem)
         else:
-            print(message)
+            print(msg)

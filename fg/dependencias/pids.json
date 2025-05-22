@@ -1,1 +1,1 @@
-{"15967": {"version": "6.5.20", "port": null, "start_time": 1745774783.3460398, "command": "fg/.fg/6.5.20/jdk/bin/java -jar fg/.fg/6.5.20/validator_cli.jar testes2/patient.json"}}
+{"8780": {"version": "6.5.20", "port": null, "start_time": 1747867901.389885, "command": "fg\\.fg\\6.5.20\\jdk/bin/java.exe -jar fg\\.fg\\6.5.20\\validator_cli.jar testes2/patient.json"}}
