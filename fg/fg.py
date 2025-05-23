@@ -1,5 +1,6 @@
 import typer
 from typing import List
+from classes import message
 
 import pathControll
 import controller
@@ -62,11 +63,17 @@ def install(
     version: str = versionHelp
     ):
     """Installs a specific version of the FHIR Guard application."""
-    for message in manager.install(version):
-        if message.startswith("\r"):
-            print(message, end="", flush=True)
+    for msg in manager.install(version):
+        if isinstance(msg, message.Message):
+            if msg.mensagem.startswith("\r"):
+                print(msg.mensagem, end="", flush=True)
+            else:
+                if msg.status == message.Status.ERRO:
+                    print(msg.mensagem)
+                else:
+                    print(msg.mensagem)
         else:
-            print(message)
+            print(msg)
     
 
 @app.command()

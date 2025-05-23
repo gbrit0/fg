@@ -1,1 +1,1 @@
-{"8780": {"version": "6.5.20", "port": null, "start_time": 1747867901.389885, "command": "fg\\.fg\\6.5.20\\jdk/bin/java.exe -jar fg\\.fg\\6.5.20\\validator_cli.jar testes2/patient.json"}}
+{"3096": {"version": "6.5.19", "port": null, "start_time": 1748040798.0307908, "command": "fg\\.fg\\6.5.19\\jdk/bin/java.exe -jar fg\\.fg\\6.5.19\\validator_cli.jar testes2/patient.json"}, "5528": {"version": "6.5.19", "port": null, "start_time": 1748040801.4898062, "command": "fg\\.fg\\6.5.19\\jdk/bin/java.exe -jar fg\\.fg\\6.5.19\\validator_cli.jar testes2/patient.json"}}
