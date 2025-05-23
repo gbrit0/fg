@@ -1,24 +1,6 @@
-import typer
-import start
+import requests
 
-app = typer.Typer()
-
+requisicao = requests.get("https://raw.githubusercontent.com/gbrit0/fg/refs/heads/main/modelo.json")
 
 
-@app.command()
-def ola():
-    print("ola")
-
-@app.command(
-    context_settings={
-        "allow_extra_args": True, "ignore_unknown_options": True
-    }
-)
-def install(
-    valor : int,
-    args : list[str] = typer.Argument(None, help="Additional arguments for the application"), #ctx: typer.Context = typer.Context() isso pega todos os argumentos de contexto,
-):
-    start.start(args)
-
-if __name__ == "__main__":
-    app()
+print(requisicao.json())
