@@ -15,7 +15,7 @@ def get_file_extension(url: str):
     _, extension = os.path.splitext(filename)
     return extension.lower()
 
-def download_com_progresso(url: str, destino: str, id: int, nome: str):
+def download_com_progresso(url: str, destino: str, id: int = None, nome: str = None):
     response = requests.get(url, stream=True)
     total = int(response.headers.get('content-length', 0))
     baixado = 0

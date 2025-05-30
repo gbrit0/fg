@@ -3,6 +3,7 @@ import platform
 import json
 from typing import Dict, Any, List
 from datetime import datetime
+import manager
 
 FG_HOME = os.environ.get("FG_HOME", "fg")
 installPath = os.path.join(FG_HOME, "fg_app")
@@ -18,11 +19,26 @@ def home_path() -> str:
     except Exception as e:
         raise RuntimeError(f"Erro ao determinar o caminho base: {str(e)}")
 
-def openJson() -> Dict[str, Any]:
+
+def procurarNovasVersoes():
     try:
         file_path = "fg/dependencias/modelo.json"
+        url = "https://raw.githubusercontent.com/gbrit0/fg/refs/heads/main/arquivosParaDownload/modelo.json"
+
+        for _ in manager.download_com_progresso(url, file_path):
+            pass
+    
+    except Exception as e:
+        raise Exception(f"Erro ao buscar novas versão: {e}")
+
+
+def openJson() -> Dict[str, Any]:
+    try:
+
+        file_path = "fg/dependencias/modelo.json"
+
         if not os.path.exists(file_path):
-            raise FileNotFoundError(f"Arquivo de dependências não encontrado: {file_path}")
+            procurarNovasVersoes()
 
         with open(file_path, "r", encoding='utf-8') as file:
             return json.load(file)
