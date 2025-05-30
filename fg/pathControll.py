@@ -6,12 +6,12 @@ from datetime import datetime
 import manager
 
 FG_HOME = os.environ.get("FG_HOME", "fg")
-installPath = os.path.join(FG_HOME, "fg_app")
+installPath = os.path.join(FG_HOME, ".fg")
 
 def set_home_path(homePath: str):
     global FG_HOME, installPath
     FG_HOME = homePath
-    installPath = os.path.join(FG_HOME, "fg_app")
+    installPath = os.path.join(FG_HOME, ".fg")
 
 def home_path() -> str:
     try:
@@ -22,7 +22,11 @@ def home_path() -> str:
 
 def procurarNovasVersoes():
     try:
-        file_path = "fg/dependencias/modelo.json"
+        dirPath = "fg/dependencias"
+        os.makedirs(dirPath, exist_ok=True)
+        
+        file_path = os.path.join(dirPath, "modelo.json")
+
         url = "https://raw.githubusercontent.com/gbrit0/fg/refs/heads/main/arquivosParaDownload/modelo.json"
 
         for _ in manager.download_com_progresso(url, file_path):

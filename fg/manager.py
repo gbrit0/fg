@@ -107,7 +107,7 @@ def install(version: str):
             subdir = os.path.join(jdkPath, jdk_contents[0])
             if os.path.isdir(subdir):
                 for item in os.listdir(subdir):
-                    os.rename(
+                    shutil.move(
                         os.path.join(subdir, item),
                         os.path.join(jdkPath, item)
                     )

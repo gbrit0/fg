@@ -126,61 +126,9 @@ def logs(
             logsPath = os.path.join(pathControll.home_path(), versao, nome, app['logs'])
             break
 
-    if logsPath is None or not os.path.exists(logsPath):
-        raise FileNotFoundError(f"Log file for app '{nome}' not found.")
+    with open(logsPath, 'r') as file:
 
-    def ler_ultimas_linhas(caminho: str, n: int):
-        with open(caminho, 'rb') as f:
-            f.seek(0, os.SEEK_END)
-            pos = f.tell()
-            linhas = []
-            buffer = b''
-            while pos > 0 and len(linhas) < n:
-                pos -= 1
-                f.seek(pos)
-                char = f.read(1)
-                if char == b'\n':
-                    if buffer:
-                        linhas.append(buffer[::-1].decode(errors='ignore'))
-                        buffer = b''
-                else:
-                    buffer += char
-            if buffer:
-                linhas.append(buffer[::-1].decode(errors='ignore'))
-        return linhas[::-1]
-
-    if follow and tail:
-        # Mostrar as últimas `tail` linhas em tempo real
-        linhas_mostradas = 0
-        with open(logsPath, 'r', encoding='utf-8', errors='ignore') as f:
-            ultimas = ler_ultimas_linhas(logsPath, tail)
-            for linha in ultimas:
-                yield linha.strip()
-                linhas_mostradas += 1
-
-            f.seek(0, os.SEEK_END)
-            while linhas_mostradas < tail:
-                nova_linha = f.readline()
-                if nova_linha:
-                    yield nova_linha.strip()
-                    linhas_mostradas += 1
-                else:
-                    time.sleep(0.5)
-    elif follow:
-        with open(logsPath, 'r', encoding='utf-8', errors='ignore') as f:
-            f.seek(0, os.SEEK_END)
-            while True:
-                nova_linha = f.readline()
-                if nova_linha:
-                    yield nova_linha.strip()
-                else:
-                    time.sleep(0.5)
-    elif tail:
-        for linha in ler_ultimas_linhas(logsPath, tail):
-            yield linha.strip()
-    else:
-        with open(logsPath, 'r', encoding='utf-8', errors='ignore') as f:
-            for linha in f:
-                yield linha.strip()
+        for linha in file.readLines():
+            yield linha
 
     
