@@ -159,7 +159,7 @@ def mostRecentInstalledVersion():
             raise RuntimeError(f"Erro ao processar versão {version}: {str(e)}")
     return recent_version
 
-def list():
+def list() -> List[Dict[str, Any]]:
     try:
         homePath = home_path()
         if not os.path.isdir(homePath):
@@ -168,22 +168,27 @@ def list():
         try:
             recent = mostRecentInstalledVersion()
         except Exception as e:
-            recent = None
-            yield f"  [Aviso: Não foi possível determinar a versão mais recente: {str(e)}]"
+            recent = None  # Ignora erro, mas não interrompe a listagem
 
+        versoes = []
         dirs_exist = False
+
         for item in sorted(os.listdir(homePath)):
             full_path = os.path.join(homePath, item)
             if os.path.isdir(full_path):
                 dirs_exist = True
-                if recent and item == recent:
-                    yield f'* {item} (mais recente)'
-                else:
-                    yield f"  {item}"
+                versoes.append({
+                    "nome": item,
+                    "default": item == recent
+                })
+
         if not dirs_exist:
-            yield "  Nenhuma versão instalada encontrada"
+            return []
+
+        return versoes
+
     except Exception as e:
-        yield f"[Erro crítico: {str(e)}]"
+        raise Exception(f"[Erro crítico: {str(e)}]")
 
 if __name__ == "__main__":
     for item in list():

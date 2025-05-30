@@ -69,60 +69,53 @@ def install(version: str = versionHelp):
 @app.command()
 def update():
     """If a newer version exists, downloads, installs it and sets it as the current default."""
-    for msg in manager.update():
-        if msg.startswith("\r"):
-            typer.echo(msg, nl=False)
-        else:
-            typer.echo(msg)
+    try:
+        id = 0
+        for msg in manager.update():
+            if(msg["indice"] != id ):
+                id = msg["indice"]
+                typer.echo()
+            else:
+                typer.echo(f"\r{msg['nome']}: {msg['porcentagem']:.2f}%", nl=False)
+
+    except Exception as e:
+        typer.echo()
+        typer.echo(typer.style(e, fg=typer.colors.RED, bold=True))
 
 @app.command()
 def uninstall(version: str = versionHelp):
     """Removes a specific version of the application."""
     if input(f"Confirm uninstallation of version {version}? (y/N)") == 'y':
-        for msg in manager.uninstall(version):
-            if msg.startswith("\r"):
-                typer.echo(msg, nl=False)
-            else:
-                typer.echo(msg)
+        try:
+            msg = manager.uninstall(version)    
+            typer.echo(msg)
+        
+        except Exception as e:
+            typer.echo()
+            typer.echo(typer.style(e, fg=typer.colors.RED, bold=True))
+
     else:
         typer.echo("Desinstalação cancelada!")
 
 @app.command()
 def list():
     """Shows all installed versions of the application."""
-    typer.echo("Installed versions:")
-    for msg in pathControll.list():
-        typer.echo(msg)
 
-@app.command()
-def config(version: str = versionHelp):
-    """Displays (read-only) the detailed configuration for a specific version."""
-    typer.echo(
-        f"""Configuration for version {version}:
-Source file: /home/user/.fg/versions/{version}/config.yaml
+    try:
+        versoes = pathControll.list()
+        typer.echo("Installed versions:")
+        
+        for versao in versoes:
+            if(versao["default"]):
+                typer.echo(f"* {versao["nome"]} (padrão - mais recente)")
+            else:
+                typer.echo(f"  {versao["nome"]}")
 
-Current settings (read-only):
-Server:
-  - Host: 0.0.0.0
-  - Port: 8080
-  - Read Timeout: 30s
-  - Write Timeout: 30s
+    except Exception as e:
+            typer.echo()
+            typer.echo(typer.style(e, fg=typer.colors.RED, bold=True))
+        
 
-Security:
-  - TLS: enabled
-  - Auth: enabled
-  - JWT Expiry: 24h
-
-Resources:
-  - Max Memory: 1024MB
-  - Max CPU: 2
-  - Workers: 10
-
-[...]
-
-To modify these settings, edit the YAML file directly.
-See Configuration Reference for all available options."""
-    )
 
 # Controle da aplicação
 @app.command(context_settings={"allow_extra_args": True, "ignore_unknown_options": True})

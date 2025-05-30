@@ -25,7 +25,7 @@ def download_com_progresso(url: str, destino: str, id: int = None, nome: str = N
         for dado in response.iter_content(chunk_size=bloco):
             arquivo.write(dado)
             baixado += len(dado)
-            porcentagem = (baixado / total) * 100 if total else 0
+            porcentagem = min((baixado / total) * 100, 100) if total else 0
             yield {"indice": id,"nome": nome, "porcentagem": porcentagem}
     
 
@@ -137,29 +137,27 @@ def install(version: str):
 
 
 def update():
+    pathControll.procurarNovasVersoes()
     for message in install(pathControll.mostRecentVersion()):
         yield message
 
 
-def uninstall(version: str) -> Generator[str, None, None]:
+def uninstall(version: str):
     try:
-        yield f"🗑️ Iniciando desinstalação da versão {version}..."
 
         homePath = pathControll.home_path()
         versionPath = os.path.join(homePath, version)
 
         if os.path.exists(versionPath):
-            yield f"🔄 Removendo diretório: {versionPath}"
             shutil.rmtree(versionPath)
-            yield f"✅ Versão {version} desinstalada com sucesso."
-            return
+            return f"Versão {version} desinstalada com sucesso."
         else:
-            yield f"⚠️ Versão {version} não encontrada em: {versionPath}"
-            return
+            raise Exception(f"⚠️ Versão {version} não encontrada em: {versionPath}")
+            
     
     except Exception as e:
-        yield f"❌ Erro durante a desinstalação: {str(e)}"
-        return
+        raise Exception(f"❌ Erro durante a desinstalação: {str(e)}")
+        
 
 
 def toRed(s:str):
