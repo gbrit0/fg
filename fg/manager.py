@@ -8,14 +8,14 @@ from typing import Generator
 
 import pathControll
 
-def get_file_extension(url: str) -> str:
+def get_file_extension(url: str):
     clean_url = url.split('?')[0]
     clean_url = clean_url.split('#')[0]
     filename = os.path.basename(clean_url)
     _, extension = os.path.splitext(filename)
     return extension.lower()
 
-def download_com_progresso(url: str, destino: str) -> Generator[str, None, None]:
+def download_com_progresso(url: str, destino: str, id: int, nome: str):
     response = requests.get(url, stream=True)
     total = int(response.headers.get('content-length', 0))
     baixado = 0
@@ -26,43 +26,38 @@ def download_com_progresso(url: str, destino: str) -> Generator[str, None, None]
             arquivo.write(dado)
             baixado += len(dado)
             porcentagem = (baixado / total) * 100 if total else 0
-            yield message.Message(message.Status.OK, f"\r📥 Baixando: {porcentagem:6.2f}%", porcentagem )
+            yield {"indice": id,"nome": nome, "porcentagem": porcentagem}
     
-    yield message.Message(message.Status.OK, " ✅", None)
 
-def extrair_com_progresso_tar(path_compactado: str, destino: str) -> Generator[str, None, None]:
+def extrair_com_progresso_tar(path_compactado: str, destino: str, id: int, nome: str):
     with tarfile.open(path_compactado, 'r:gz') as tar:
         membros = tar.getmembers()
         total = len(membros)
         for i, membro in enumerate(membros, 1):
             tar.extract(membro, path=destino)
             porcentagem = (i / total) * 100
-            yield message.Message(message.Status.OK, f"\r📦 Extraindo .tar.gz: {porcentagem:6.2f}%", porcentagem )
+            yield {"indice": id,"nome": nome, "porcentagem": porcentagem}
             
-    yield message.Message(message.Status.OK, " ✅", None)
 
-def extrair_com_progresso_zip(path_compactado: str, destino: str) -> Generator[str, None, None]:
+def extrair_com_progresso_zip(path_compactado: str, destino: str, id: int, nome: str):
     with zipfile.ZipFile(path_compactado, 'r') as zipf:
         membros = zipf.infolist()
         total = len(membros)
         for i, membro in enumerate(membros, 1):
             zipf.extract(membro, path=destino)
             porcentagem = (i / total) * 100
-            yield message.Message(message.Status.OK, f"\r📦 Extraindo .zip: {porcentagem:6.2f}%", porcentagem )
-    yield message.Message(message.Status.OK, " ✅", None)
+            yield {"indice": id,"nome": nome, "porcentagem": porcentagem}
 
-def install(version: str) -> Generator[str, None, None]:
+def install(version: str):
     try: 
-        yield message.Message(message.Status.OK,f"🟡 Iniciando instalação da versão {version}...", None)
-
+        id = 0
+        nome = ""
         homePath = pathControll.home_path()
         pathOfDownload = os.path.join(homePath, version)
         jdkPath = os.path.join(pathOfDownload, "jdk")
 
         if os.path.exists(pathOfDownload):
             raise Exception("A versão já foi instalada")
-
-        yield message.Message(message.Status.OK, f"📁 Criando diretório: {pathOfDownload}",None)
         
         os.makedirs(pathOfDownload, exist_ok=True)
 
@@ -70,29 +65,40 @@ def install(version: str) -> Generator[str, None, None]:
         ext = get_file_extension(jdkUrl)
 
         if ext == '.gz': 
-            yield message.Message(message.Status.OK,f"⬇️ Baixando JDK (.tar.gz) de: {jdkUrl}",None)
+            nome = "Baixando JDK (.tar.gz)"
+            yield {"indice": id,"nome": nome, "porcentagem": 0}
+
             jdkCompactadoPath = os.path.join(jdkPath, "jdk.tar.gz")
             os.makedirs(jdkPath, exist_ok=True)
             
-            for progresso in download_com_progresso(jdkUrl, jdkCompactadoPath):
+            for progresso in download_com_progresso(jdkUrl, jdkCompactadoPath, id, nome):
                 yield progresso
+            id += 1
 
-            yield message.Message(message.Status.OK,f"📦 Extraindo arquivo: {jdkCompactadoPath}",None)
+            nome = "Extraindo arquivo jdk"
+            yield {"indice": id,"nome": nome, "porcentagem": 0}
             
-            for progresso in extrair_com_progresso_tar(jdkCompactadoPath, jdkPath):
+            for progresso in extrair_com_progresso_tar(jdkCompactadoPath, jdkPath, id, nome):
                 yield progresso
+            id += 1
 
         elif ext == '.zip':
-            yield message.Message(message.Status.OK,f"⬇️ Baixando JDK (.zip) de: {jdkUrl}",None)
+
+            nome = "Baixando JDK (.zip)"
+            yield {"indice": id,"nome": nome, "porcentagem": 0}
+
             jdkCompactadoPath = os.path.join(jdkPath, "jdk.zip")
             os.makedirs(jdkPath, exist_ok=True)
             
-            for progresso in download_com_progresso(jdkUrl, jdkCompactadoPath):
+            for progresso in download_com_progresso(jdkUrl, jdkCompactadoPath,id,nome):
                 yield progresso
+            id += 1
 
-            yield message.Message(message.Status.OK,f"📦 Extraindo arquivo: {jdkCompactadoPath}",None)
-            for progresso in extrair_com_progresso_zip(jdkCompactadoPath, jdkPath):
+            nome = "Extraindo arquivo jdk"
+            yield {"indice": id,"nome": nome, "porcentagem": 0}
+            for progresso in extrair_com_progresso_zip(jdkCompactadoPath, jdkPath,id,nome):
                 yield progresso
+            id += 1
 
         os.remove(jdkCompactadoPath)
 
@@ -108,24 +114,26 @@ def install(version: str) -> Generator[str, None, None]:
                 shutil.rmtree(subdir)
 
         
-        yield message.Message(message.Status.OK,"⬇️ Baixando dependências...",None)
         
         dependencies = pathControll.getDependencies(version)
         for dependencie in dependencies:
-            dependenciePath = os.path.join(pathOfDownload, dependencie['localName'])
+            dependenciePath = os.path.join(pathOfDownload, dependencie['nomeLocal'])
             dependencieUrl = dependencie['url']
-            yield message.Message(message.Status.OK,f"   🔹 {dependencie['localName']} de {dependencieUrl}",None)
-            for progresso in download_com_progresso(dependencieUrl, dependenciePath):
+
+            nome = f"Baixando {dependencie['nomeLocal']}"
+            yield {"indice": id,"nome": nome, "porcentagem": 0}
+
+            for progresso in download_com_progresso(dependencieUrl, dependenciePath,id,nome):
                 yield progresso
 
-        yield message.Message(message.Status.OK,"✅ Instalação concluída com sucesso.",None)
+            id +=1
         return
     
     except Exception as e:
         if os.path.exists(pathOfDownload):
             shutil.rmtree(pathOfDownload)
-        yield message.Message(message.Status.ERRO,f"❌ Erro durante a instalação: {str(e)}",str(e))
-        return
+        raise Exception(f"❌ Erro durante a instalação: {str(e)}")
+    
 
 
 def update():

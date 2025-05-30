@@ -19,9 +19,7 @@
                {
                   "nomeLocal": "validator_cli.jar",
                   "url": "https://github.com/hapifhir/org.hl7.fhir.core/releases/download/6.5.19/validator_cli.jar"
-               }
-            ],
-            "arquivos" :[
+               },
                {
                   "nomeLocal": "paciente.json",
                   "url": "https://patient_dowlowadteste/paciente.json"
