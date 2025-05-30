@@ -115,18 +115,22 @@ def install(version: str):
 
         
         
-        dependencies = pathControll.getDependencies(version)
-        for dependencie in dependencies:
-            dependenciePath = os.path.join(pathOfDownload, dependencie['nomeLocal'])
-            dependencieUrl = dependencie['url']
+        apps = pathControll.getApps(version)
+        for app in apps:
+            
+            pathOfApp = os.path.join(pathOfDownload, app['nome'])
+            os.makedirs(pathOfApp)
+            for dependencia in app['dependencias']:
+                dependenciePath = os.path.join(pathOfApp, dependencia['nomeLocal'])
+                dependencieUrl = dependencia['url']
 
-            nome = f"Baixando {dependencie['nomeLocal']}"
-            yield {"indice": id,"nome": nome, "porcentagem": 0}
+                nome = f"Baixando {dependencia['nomeLocal']}"
+                yield {"indice": id,"nome": nome, "porcentagem": 0}
 
-            for progresso in download_com_progresso(dependencieUrl, dependenciePath,id,nome):
-                yield progresso
+                for progresso in download_com_progresso(dependencieUrl, dependenciePath,id,nome):
+                    yield progresso
 
-            id +=1
+                id +=1
         return
     
     except Exception as e:

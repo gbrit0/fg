@@ -4,6 +4,7 @@ import subprocess
 from typing import List
 import platform
 import signal
+import shlex
 
 import pathControll
 import monitor
@@ -12,39 +13,48 @@ homePath = pathControll.home_path()
 system = platform.system()
 
 
+def montarComando(comando: str, versao: str, jar_name: str):
+    if system == "Windows":
+        java_path = os.path.join(homePath, versao, 'jdk/bin/java.exe')
+    else:
+        java_path = os.path.join(homePath, versao, 'jdk/bin/java')
+
+    if not os.path.exists(java_path):
+        raise FileNotFoundError(f"Java executable not found at {java_path}")
+
+    partes = shlex.split(comando)
+    novas_partes = []
+
+    novas_partes.append(java_path)
+
+    for parte in partes:
+        if os.path.splitext(parte)[1] != '':        
+            parte = os.path.join(homePath,versao,jar_name,parte)
+            if not os.path.exists(parte):
+                raise FileNotFoundError(f"Jar file not found at {parte}")
+        novas_partes.append(parte)
+    
+    return novas_partes
+
 def start(
         version: str,
         jar_name: str,
-        args: List[str],
+        #args: List[str],
 ):
     try:
         versionDict = pathControll.getVersion(version)
 
-        jar_info = None
-        for dependencie in versionDict['dependencies']:
-            if dependencie['name'] == jar_name:
-                jar_info = dependencie
+        comando = None
+        for app in versionDict['apps']:
+            if app['nome'] == jar_name:
+                comando = app['comando']
                 break
-        
-        if jar_info is None:
-            return f"Error: Jar '{jar_name}' not found in version '{version}' dependencies"
 
-        jar_path = os.path.join(homePath, version, jar_info['localName'])
+        if comando is None:
+            raise RuntimeError(f"Jar '{jar_name}' not found in version '{version}' apps")
 
-        if not os.path.exists(jar_path):
-            return f"Error: Jar file not found at {jar_path}"
 
-        if system == "Windows":
-            java_path = os.path.join(homePath, version, 'jdk/bin/java.exe')
-        else:
-            java_path = os.path.join(homePath, version, 'jdk/bin/java')
-
-        if not os.path.exists(java_path):
-            return f"Error: Java executable not found at {java_path}"
-
-        cmd = [java_path, '-jar', jar_path]
-        if args is not None:
-            cmd += args
+        cmd = montarComando(comando, version,jar_name)
 
         try:
             if system == "Windows":
@@ -63,46 +73,41 @@ def start(
                     stdin=subprocess.PIPE,
                     preexec_fn=os.setsid
                 )
-            
-            pid = process.pid
-            monitor.save_pid(pid,version," ".join(cmd))#juna a lista de comando em uma str
 
-            return f"Application started successfully. PID: {pid}"
+            pid = process.pid
+            monitor.save_pid(pid, version, " ".join(cmd))  # junta a lista de comando em uma str
+
+            return pid
 
         except subprocess.SubprocessError as e:
-            return f"Error starting application: {str(e)}"
+            raise RuntimeError(f"Error starting application: {str(e)}")
         except Exception as e:
-            return f"Unexpected error while starting application: {str(e)}"
+            raise RuntimeError(f"Unexpected error while starting application: {str(e)}")
 
     except KeyError as e:
-        return f"Error: Missing key in version data - {str(e)}"
+        raise KeyError(f"Missing key in version data - {str(e)}")
     except Exception as e:
-        return f"Unexpected error: {str(e)}"
+        raise RuntimeError(f"Unexpected error: {str(e)}")
 
 
-def stop(
-        pid: int,
-):
-    try:
-        if not isinstance(pid, int) or pid <= 0:
-            return "Error: Invalid PID provided"
+    
+def stop(pid: int):
+    if not isinstance(pid, int) or pid <= 0:
+        raise ValueError("Invalid PID provided")
 
-        if system == "Windows":
-            try:
-                subprocess.run(['taskkill', '/F', '/PID', str(pid)], check=True)
-            except subprocess.CalledProcessError as e:
-                return f"Error stopping process (PID: {pid}): {str(e)}"
-        else:
-            try:
-                os.killpg(os.getpgid(pid), signal.SIGTERM)
-            except ProcessLookupError:
-                return f"Error: Process with PID {pid} not found"
-            except PermissionError:
-                return f"Error: Permission denied when trying to stop process {pid}"
-            except Exception as e:
-                return f"Error stopping process (PID: {pid}): {str(e)}"
-        
-        return f"Application instance (PID: {pid}) stopped successfully"
+    if system == "Windows":
+        try:
+            subprocess.run(['taskkill', '/F', '/PID', str(pid)], check=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError(f"Error stopping process (PID: {pid}): {str(e)}")
+    else:
+        try:
+            os.killpg(os.getpgid(pid), signal.SIGTERM)
+        except ProcessLookupError:
+            raise ProcessLookupError(f"Process with PID {pid} not found")
+        except PermissionError:
+            raise PermissionError(f"Permission denied when trying to stop process {pid}")
+        except Exception as e:
+            raise RuntimeError(f"Error stopping process (PID: {pid}): {str(e)}")
 
-    except Exception as e:
-        return f"Unexpected error while stopping application: {str(e)}"
+    return f"Application instance (PID: {pid}) stopped successfully"

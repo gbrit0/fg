@@ -122,31 +122,51 @@ def list():
 def start(
     version: str = versionHelp,
     jar_name: str = jar_nameHelp,
-    args: List[str] = typer.Argument(None, help="Additional arguments for the application")
+    #args: List[str] = typer.Argument(None, help="Additional arguments for the application")
 ):
     """Starts a specific version of the application (must be installed first)."""
-    typer.echo(controller.start(version, jar_name, args))
+    try:
+        typer.echo(f"Aplicação iniciada com sucesso. PID: {controller.start(version, jar_name)}")
+    except Exception as e:
+        typer.echo()
+        typer.echo(typer.style(e, fg=typer.colors.RED, bold=True))
 
 @app.command()
 def stop(pid: int = pidHelp):
     """Stops a running instance of the application."""
-    typer.echo(controller.stop(pid))
+    try:
+        controller.stop(pid)
+        typer.echo(f"Instância da aplicação (PID: {pid}) parada com sucesso")
+    except Exception as e:
+        typer.echo()
+        typer.echo(typer.style(e, fg=typer.colors.RED, bold=True))
+
+    
 
 # Monitoramento e diagnóstico
 @app.command()
 def status():
     """Shows the current status of all running instances of the application."""
-    typer.echo("PID      Version   Port   Uptime   Memory       CPU       Tasks")
-    for msg in monitor.status():
-        typer.echo(msg)
+
+    try:
+        processos = monitor.status()
+        typer.echo("PID      Version   Port   Uptime   Memory       CPU       Tasks")
+        for processo in processos:
+            typer.echo(f"{processo['PID']}    {processo['Version']}    {processo['Port']}   {processo['Uptime']}       {processo['Memory']}    {processo['CPU']}    {processo['Tasks']}")
+    except Exception as e:
+        typer.echo()
+        typer.echo(typer.style(e, fg=typer.colors.RED, bold=True))
 
 @app.command()
-def logs(pid: int = pidHelp, tail: int = tailHelp, follow: bool = followHelp):
+def logs(nome: str, version: str = versionHelp, tail: int = tailHelp, follow: bool = followHelp):
     """Displays the logs for a specific running instance."""
-    typer.echo(f"Mostrando os logs do processo: {pid}")
-    if follow:
-        typer.echo("Mostrando Logs dinamicamente.")
-    typer.echo(f"Mostrando {'todos os logs' if tail is None else f'os últimos {tail} logs'}.")
+    
+    try:
+        for linha in logs(nome, version, tail, follow):
+            typer.echo(linha)
+    except Exception as e:
+        typer.echo()
+        typer.echo(typer.style(e, fg=typer.colors.RED, bold=True))
 
 if __name__ == "__main__":
     app()

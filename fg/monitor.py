@@ -3,6 +3,8 @@ import os
 import psutil
 import time
 
+import pathControll
+
 PIDS_FILE = "fg/dependencias/pids.json"
 
 def pids_path():
@@ -95,8 +97,7 @@ def status():
         except Exception as e:
             # Algum outro erro, você pode logar se quiser
             continue
-    for  status_item in status_list:
-        yield f"{status_item['PID']}    {status_item['Version']}    {status_item['Port']}   {status_item['Uptime']}       {status_item['Memory']}    {status_item['CPU']}    {status_item['Tasks']}"
+    return status_list
 
 def format_uptime(seconds):
     """Formata o uptime em dias, horas, minutos e segundos."""
@@ -111,3 +112,75 @@ def format_uptime(seconds):
         return f"{minutes}m {sec}s"
     else:
         return f"{sec}s"
+    
+
+def logs(
+    nome: str,
+    versao: str,
+    tail: int = None,
+    follow: bool = False
+):
+    logsPath = None
+    for app in pathControll.getApps():
+        if app['nome'] == nome:
+            logsPath = os.path.join(pathControll.home_path(), versao, nome, app['logs'])
+            break
+
+    if logsPath is None or not os.path.exists(logsPath):
+        raise FileNotFoundError(f"Log file for app '{nome}' not found.")
+
+    def ler_ultimas_linhas(caminho: str, n: int):
+        with open(caminho, 'rb') as f:
+            f.seek(0, os.SEEK_END)
+            pos = f.tell()
+            linhas = []
+            buffer = b''
+            while pos > 0 and len(linhas) < n:
+                pos -= 1
+                f.seek(pos)
+                char = f.read(1)
+                if char == b'\n':
+                    if buffer:
+                        linhas.append(buffer[::-1].decode(errors='ignore'))
+                        buffer = b''
+                else:
+                    buffer += char
+            if buffer:
+                linhas.append(buffer[::-1].decode(errors='ignore'))
+        return linhas[::-1]
+
+    if follow and tail:
+        # Mostrar as últimas `tail` linhas em tempo real
+        linhas_mostradas = 0
+        with open(logsPath, 'r', encoding='utf-8', errors='ignore') as f:
+            ultimas = ler_ultimas_linhas(logsPath, tail)
+            for linha in ultimas:
+                yield linha.strip()
+                linhas_mostradas += 1
+
+            f.seek(0, os.SEEK_END)
+            while linhas_mostradas < tail:
+                nova_linha = f.readline()
+                if nova_linha:
+                    yield nova_linha.strip()
+                    linhas_mostradas += 1
+                else:
+                    time.sleep(0.5)
+    elif follow:
+        with open(logsPath, 'r', encoding='utf-8', errors='ignore') as f:
+            f.seek(0, os.SEEK_END)
+            while True:
+                nova_linha = f.readline()
+                if nova_linha:
+                    yield nova_linha.strip()
+                else:
+                    time.sleep(0.5)
+    elif tail:
+        for linha in ler_ultimas_linhas(logsPath, tail):
+            yield linha.strip()
+    else:
+        with open(logsPath, 'r', encoding='utf-8', errors='ignore') as f:
+            for linha in f:
+                yield linha.strip()
+
+    

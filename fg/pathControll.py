@@ -75,12 +75,9 @@ def getJdkUrl(version: str) -> str:
     except Exception as e:
         raise RuntimeError(f"Erro ao obter URL do JDK: {str(e)}")
 
-def getDependencies(version: str) -> List[Dict[str, str]]:
+def getApps(version: str) -> List[Dict[str, str]]:
     version_dict = getVersion(version)
-    dependencies = []
-    for app in version_dict.get("apps", []):
-        dependencies.extend(app.get("dependencias", []))
-    return dependencies
+    return version_dict['apps']
 
 def available() -> List[Dict[str, str]]:
     try:
