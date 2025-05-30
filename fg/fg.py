@@ -12,7 +12,7 @@ app = typer.Typer(no_args_is_help=True)
 
 # Definição dos argumentos e seus comentários
 versionHelp = typer.Argument(help="Versão do FHIR Guard.")
-jar_nameHelp = typer.Argument(help="The name of the jar file")
+appNameHelp = typer.Argument(help="The name of the aplication")
 pidHelp = typer.Argument(help="PID can be obtained from the 'fg status' command.")
 tailHelp = typer.Option(None, "--tail", "-t", help="Shows the last n lines of the logs. If not specified, shows all logs.")
 followHelp = typer.Option(False, "--follow", "-f", help="Follows the log output in real-time.")
@@ -121,12 +121,12 @@ def list():
 @app.command(context_settings={"allow_extra_args": True, "ignore_unknown_options": True})
 def start(
     version: str = versionHelp,
-    jar_name: str = jar_nameHelp,
+    app_name: str = appNameHelp,
     #args: List[str] = typer.Argument(None, help="Additional arguments for the application")
 ):
     """Starts a specific version of the application (must be installed first)."""
     try:
-        typer.echo(f"Aplicação iniciada com sucesso. PID: {controller.start(version, jar_name)}")
+        typer.echo(f"Aplicação iniciada com sucesso. PID: {controller.start(version, app_name)}")
     except Exception as e:
         typer.echo()
         typer.echo(typer.style(e, fg=typer.colors.RED, bold=True))
@@ -158,11 +158,11 @@ def status():
         typer.echo(typer.style(e, fg=typer.colors.RED, bold=True))
 
 @app.command()
-def logs(nome: str, version: str = versionHelp, tail: int = tailHelp, follow: bool = followHelp):
+def logs(version: str = versionHelp, app_name: str = appNameHelp, tail: int = tailHelp, follow: bool = followHelp):
     """Displays the logs for a specific running instance."""
     
     try:
-        for linha in logs(nome, version, tail, follow):
+        for linha in monitor.logs(app_name, version, tail, follow):
             typer.echo(linha)
     except Exception as e:
         typer.echo()

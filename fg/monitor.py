@@ -121,14 +121,61 @@ def logs(
     follow: bool = False
 ):
     logsPath = None
-    for app in pathControll.getApps():
+    for app in pathControll.getApps(versao):
         if app['nome'] == nome:
             logsPath = os.path.join(pathControll.home_path(), versao, nome, app['logs'])
             break
 
-    with open(logsPath, 'r') as file:
+    if logsPath is None or not os.path.exists(logsPath):
+        raise FileNotFoundError(f"Log file for app '{nome}' not found.")
 
-        for linha in file.readLines():
-            yield linha
+    def ler_ultimas_linhas(caminho: str, n: int):
+        with open(caminho, 'rb') as f:
+            f.seek(0, os.SEEK_END)
+            pos = f.tell()
+            linhas = []
+            buffer = b''
+            while pos > 0 and len(linhas) < n:
+                pos -= 1
+                f.seek(pos)
+                char = f.read(1)
+                if char == b'\n':
+                    if buffer:
+                        linhas.append(buffer[::-1].decode(errors='ignore'))
+                        buffer = b''
+                else:
+                    buffer += char
+            if buffer:
+                linhas.append(buffer[::-1].decode(errors='ignore'))
+        return linhas[::-1]
 
+    if follow and tail is not None:
+        # Mostrar as últimas tail linhas em tempo real
+        linhas_mostradas = 0
+        with open(logsPath, 'r', encoding='utf-8', errors='ignore') as f:
+            
+            f.seek(0, os.SEEK_END)
+            while linhas_mostradas < tail:
+                nova_linha = f.readline()
+                if nova_linha:
+                    yield nova_linha.strip()
+                    linhas_mostradas += 1
+                else:
+                    time.sleep(0.5)
+    elif follow:
+        with open(logsPath, 'r', encoding='utf-8', errors='ignore') as f:
+            f.seek(0, os.SEEK_END)
+            while True:
+                nova_linha = f.readline()
+                if nova_linha:
+                    yield nova_linha.strip()
+                else:
+                    time.sleep(0.5)
+    elif tail is not None:
+        for linha in ler_ultimas_linhas(logsPath, tail):
+            yield linha.strip()
+    else:
+        with open(logsPath, 'r', encoding='utf-8', errors='ignore') as f:
+            for linha in f:
+                yield linha.strip()
     

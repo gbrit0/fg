@@ -1,8 +1,7 @@
-from typing import List
-import typer
-import os
+import requests
 
-nome = "fg/dependencias/config.log"
-with open(nome, 'r') as file:
-    for linha in file.readlines():
-        print(linha)
+url = "https://raw.githubusercontent.com/gbrit0/fg/refs/heads/main/arquivosParaDownload/config.log" 
+
+requisiçao = requests.get(url)
+
+print(requisiçao)

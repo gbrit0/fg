@@ -26,7 +26,7 @@
                },
                {
                   "nomeLocal": "config.log",
-                  "url": ""
+                  "url": "https://raw.githubusercontent.com/gbrit0/fg/refs/heads/main/arquivosParaDownload/config.log"
                }
             ],
             "comando": "-jar validator_cli.jar paciente.json",
