@@ -23,6 +23,10 @@
                {
                   "nomeLocal": "paciente.json",
                   "url": "https://raw.githubusercontent.com/gbrit0/fg/refs/heads/main/arquivosParaDownload/exemploFHIR.json"
+               },
+               {
+                  "nomeLocal": "config.log",
+                  "url": ""
                }
             ],
             "comando": "-jar validator_cli.jar paciente.json",

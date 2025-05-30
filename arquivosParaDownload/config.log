@@ -1,0 +1,19 @@
+[INFO] 2025-05-30 10:01:12 - Iniciando instalação do JDK na pasta: fg\fg_app\6.5.19\jdk
+[DEBUG] 2025-05-30 10:01:13 - Verificando se o diretório fg\fg_app\6.5.19\jdk existe
+[INFO] 2025-05-30 10:01:13 - Diretório criado com sucesso: fg\fg_app\6.5.19\jdk
+[INFO] 2025-05-30 10:01:14 - Extraindo arquivo jdk-24.zip para fg\fg_app\6.5.19\jdk
+[DEBUG] 2025-05-30 10:01:20 - Conteúdo extraído: ['jdk-24']
+[INFO] 2025-05-30 10:01:21 - Estrutura detectada: apenas 1 subdiretório (jdk-24)
+[DEBUG] 2025-05-30 10:01:22 - Iniciando reorganização dos arquivos do JDK
+[ERROR] 2025-05-30 10:01:23 - Falha ao mover lib: [WinError 5] Acesso negado
+[WARNING] 2025-05-30 10:01:24 - Tentando novamente após 1 segundo...
+[INFO] 2025-05-30 10:01:25 - Tentativa de mover lib bem-sucedida
+[DEBUG] 2025-05-30 10:01:25 - Limpando diretório temporário: jdk-24
+[INFO] 2025-05-30 10:01:26 - Diretório jdk-24 removido com sucesso
+[INFO] 2025-05-30 10:01:27 - Instalando variáveis de ambiente JAVA_HOME
+[INFO] 2025-05-30 10:01:28 - JAVA_HOME configurado: fg\fg_app\6.5.19\jdk
+[DEBUG] 2025-05-30 10:01:29 - Verificando versão do Java instalada
+[INFO] 2025-05-30 10:01:30 - Versão do Java detectada: jdk-24.0.1
+[INFO] 2025-05-30 10:01:31 - Instalação finalizada com sucesso
+[DEBUG] 2025-05-30 10:01:32 - Tempo total de execução: 19.8 segundos
+[INFO] 2025-05-30 10:01:32 - Log finalizado
