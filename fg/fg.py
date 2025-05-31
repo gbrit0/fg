@@ -8,7 +8,7 @@ import manager
 import monitor
 from fg_gui import fgGui
 
-app = typer.Typer(no_args_is_help=True)
+app = typer.Typer(no_args_is_help=True) #SE DER ERRO AO MOSTRAR O HELP SEM ARGUMENTOS É POR CONTA DO CLICK 8.2.1, FIZ O DOWNGRADE PRO CLICK 8.1.8 E FUNCIONOU SEM ERROS
 
 # Definição dos argumentos e seus comentários
 versionHelp = typer.Argument(help="Versão do FHIR Guard.")
@@ -20,11 +20,11 @@ followHelp = typer.Option(False, "--follow", "-f", help="Follows the log output 
 # Opções globais
 @app.callback()
 def global_options(
-    log_level: str = typer.Option(None, "--log-level", "-l", help="Sets the log level for the fg CLI (debug, info, warn, error)."),
+    #log_level: str = typer.Option(None, "--log-level", "-l", help="Sets the log level for the fg CLI (debug, info, warn, error)."),
     working_directory: str = typer.Option(None, "--dir", "-d", help="Specifies the working directory."),
 ):
-    if log_level:
-        typer.echo("Modo detalhado ativado!")
+    #if log_level:
+    #    typer.echo("Modo detalhado ativado!")
     if working_directory:
         pathControll.set_home_path(working_directory)
         typer.echo(f"Using work directiry as {working_directory}")
