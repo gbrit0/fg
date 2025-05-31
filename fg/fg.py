@@ -39,7 +39,7 @@ def available():
         typer.echo("Versão      Data        JDK")
         typer.echo("------      ----------  ---")
         for resultado in resultados:
-            typer.echo(f"{resultado["versao"]}      {resultado["data"]}  {resultado["jdkVersao"]}")
+            typer.echo(f"{resultado['versao']}      {resultado['data']}  {resultado['jdkVersao']}")
 
     except Exception as e:
         typer.echo(typer.style(e, fg=typer.colors.RED, bold=True))
@@ -107,9 +107,9 @@ def list():
         
         for versao in versoes:
             if(versao["default"]):
-                typer.echo(f"* {versao["nome"]} (padrão - mais recente)")
+                typer.echo(f"* {versao['nome']} (padrão - mais recente)")
             else:
-                typer.echo(f"  {versao["nome"]}")
+                typer.echo(f"  {versao['nome']}")
 
     except Exception as e:
             typer.echo()
