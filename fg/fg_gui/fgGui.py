@@ -5,14 +5,14 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QTabWidget, QWidget, QVB
                              QMessageBox, QFileDialog, QSplitter, QTreeWidget, QTreeWidgetItem)
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QColor, QFont
-
+from packaging.version import Version
 
 class FHIRGuardGUI(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("FHIR Guard - Management Interface")
         self.setGeometry(100, 100, 1000, 700)
-        
+        self.default_version = None
         # Initialize data attributes first
         self.installed_versions = ["1.0.0", "1.1.0", "2.0.0"]  # Default values
         self.available_versions = ["1.0.0", "1.1.0", "1.2.0", "2.0.0"]  # Default values
@@ -165,9 +165,12 @@ class FHIRGuardGUI(QMainWindow):
         self.set_default_btn.clicked.connect(self.set_default_version)
         self.uninstall_btn = QPushButton("Uninstall")
         self.uninstall_btn.clicked.connect(self.uninstall_version)
-        
+        self.uninstall_all_btn = QPushButton("Uninstall All")
+        self.uninstall_all_btn.clicked.connect(self.uninstall_all_versions)
+
         button_layout.addWidget(self.set_default_btn)
         button_layout.addWidget(self.uninstall_btn)
+        button_layout.addWidget(self.uninstall_all_btn)
         installed_layout.addLayout(button_layout)
         
         installed_group.setLayout(installed_layout)
@@ -437,29 +440,32 @@ logging:
             self.log_viewer.verticalScrollBar().setValue(self.log_viewer.verticalScrollBar().maximum())
 
     def start_instance(self):
-        """Start a new instance of the selected version"""
-        version = self.start_version_combo.currentText()
-        if version:
-            # Simulate starting an instance
-            new_pid = str(int(self.running_instances[-1]["pid"]) + 1) if self.running_instances else "1000"
-            new_instance = {
-                "pid": new_pid,
-                "version": version,
-                "port": str(8080 + len(self.running_instances)),
-                "uptime": "0m",
-                "memory": "128MB",
-                "cpu": "1%",
-                "tasks": "0"
-            }
-            self.running_instances.append(new_instance)
-            self.update_instances_table()
-            
-            # Add to logs
-            self.logs_preview.append(f"{new_pid} - Instance started (version {version})")
-            
-            QMessageBox.information(self, "Instance Started", 
-                                  f"FHIR Guard {version} started successfully. PID: {new_pid}")
-            self.status_bar.showMessage(f"Instance {new_pid} started successfully", 3000)
+        """Start a new instance of the default version"""
+        version = self.default_version
+        if not version:
+            QMessageBox.warning(self, "No Default Version", "Please set a default version before starting an instance.")
+            return
+
+        # Simulate starting an instance
+        new_pid = str(int(self.running_instances[-1]["pid"]) + 1) if self.running_instances else "1000"
+        new_instance = {
+            "pid": new_pid,
+            "version": version,
+            "port": str(8080 + len(self.running_instances)),
+            "uptime": "0m",
+            "memory": "128MB",
+            "cpu": "1%",
+            "tasks": "0"
+        }
+        self.running_instances.append(new_instance)
+        self.update_instances_table()
+        
+        # Add to logs
+        self.logs_preview.append(f"{new_pid} - Instance started (version {version})")
+        
+        QMessageBox.information(self, "Instance Started", 
+                            f"FHIR Guard {version} started successfully. PID: {new_pid}")
+        self.status_bar.showMessage(f"Instance {new_pid} started successfully", 3000)
 
     def stop_instance(self):
         """Stop the selected running instance"""
@@ -490,13 +496,17 @@ logging:
         """Install the selected version"""
         version = self.version_combo.currentText()
         if version:
+            if version in self.installed_versions:
+                QMessageBox.information(self, "Already Installed", f"Version {version} is already installed.")
+                return
+            
             # Simulate installation
             self.installed_versions.append(version)
             self.installed_versions.sort(reverse=True)
             self.update_versions_list()
             
             QMessageBox.information(self, "Installation Complete", 
-                                  f"FHIR Guard {version} has been installed successfully.")
+                                f"FHIR Guard {version} has been installed successfully.")
             self.status_bar.showMessage(f"Version {version} installed successfully", 3000)
 
     def uninstall_version(self):
@@ -528,32 +538,67 @@ logging:
         else:
             QMessageBox.warning(self, "No Selection", "Please select a version to uninstall")
 
+    def uninstall_all_versions(self):
+        """Uninstall all versions that are not currently running"""
+        if not self.installed_versions:
+            QMessageBox.information(self, "No Versions", "There are no installed versions to uninstall.")
+            return
+
+        # Verifica se alguma versão instalada está em uso
+        running_versions = [inst["version"] for inst in self.running_instances]
+        protected_versions = set(self.installed_versions).intersection(running_versions)
+
+        if protected_versions:
+            QMessageBox.warning(
+                self,
+                "Running Versions Detected",
+                f"Cannot uninstall all. The following versions are currently running: {', '.join(protected_versions)}.\n"
+                f"Stop them before proceeding."
+            )
+            return
+
+        # Confirmação do usuário
+        reply = QMessageBox.question(
+            self,
+            "Confirm Uninstall All",
+            "Are you sure you want to uninstall ALL versions?",
+            QMessageBox.Yes | QMessageBox.No
+        )
+
+        if reply == QMessageBox.Yes:
+            self.installed_versions.clear()
+            self.update_versions_list()
+            QMessageBox.information(self, "Uninstallation Complete", "All versions have been uninstalled.")
+            self.status_bar.showMessage("All versions uninstalled successfully", 3000)
+
     def set_default_version(self):
         """Set the selected version as default"""
         selected_items = self.installed_list.selectedItems()
         if selected_items:
             version = selected_items[0].text()
+            self.default_version = version  # guarda a versão default
             self.current_version_label.setText(version)
             QMessageBox.information(self, "Default Version Set", 
-                                  f"FHIR Guard {version} is now the default version.")
+                                f"FHIR Guard {version} is now the default version.")
             self.status_bar.showMessage(f"Version {version} set as default", 3000)
         else:
             QMessageBox.warning(self, "No Selection", "Please select a version to set as default")
 
     def check_for_updates(self):
         """Check for available updates"""
-        # Simulate update check
-        if len(self.available_versions) > len(self.installed_versions):
-            latest = self.available_versions[0]
+        latest = max(self.available_versions, key=Version)  # pega a versão mais nova corretamente
+
+        if latest not in self.installed_versions:
             reply = QMessageBox.question(self, "Update Available", 
-                                       f"New version {latest} is available. Would you like to install it now?",
-                                       QMessageBox.Yes | QMessageBox.No)
+                                    f"New version {latest} is available. Would you like to install it now?",
+                                    QMessageBox.Yes | QMessageBox.No)
             
             if reply == QMessageBox.Yes:
+                self.version_combo.setCurrentText(latest)
                 self.install_version()
         else:
             QMessageBox.information(self, "No Updates", 
-                                  "You have the latest version installed.")
+                                "You have the latest version installed.")
 
     def view_configuration(self):
         """View configuration for selected version in versions tab"""
@@ -609,3 +654,6 @@ def main():
     window = FHIRGuardGUI()
     window.show()
     sys.exit(app.exec_())
+
+if __name__ == "__main__":
+    main()
