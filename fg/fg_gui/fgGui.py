@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QTabWidget, QWidget, QVB
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QColor, QFont
 from packaging.version import Version
-from manager import (install, uninstall)
+from manager import (install, uninstall, clear_default_version)
 from controller import (start, stop)
 import monitor
 import pathControll
@@ -16,10 +16,11 @@ class FHIRGuardGUI(QMainWindow):
         super().__init__()
         self.setWindowTitle("FHIR Guard - Management Interface")
         self.setGeometry(100, 100, 1000, 700)
-        self.default_version = None
+        self.default_version = pathControll.get_default_version()
         # Initialize data attributes first
         self.installed_versions = [v["nome"] for v in pathControll.list()]
-        self.available_versions = [v["versao"] for v in pathControll.available()] #self.available_versions = ["1.0.0", "1.1.0", "1.2.0", "2.0.0", "6.5.19"] CASO QUEIRA TESTAR
+        self.versoes_info = pathControll.available()
+        self.available_versions = [v["versao"] for v in self.versoes_info]
         self.running_instances = monitor.status()
         
         # Central widget and layout
@@ -91,7 +92,7 @@ class FHIRGuardGUI(QMainWindow):
         # Current version info
         version_layout = QHBoxLayout()
         version_layout.addWidget(QLabel("Current Default Version:"))
-        self.current_version_label = QLabel("1.1.0")
+        self.current_version_label = QLabel(self.default_version if self.default_version else "None")
         version_layout.addWidget(self.current_version_label)
         version_layout.addStretch()
         status_layout.addLayout(version_layout)
@@ -158,8 +159,8 @@ class FHIRGuardGUI(QMainWindow):
         available_layout = QVBoxLayout()
         
         self.available_table = QTableWidget()
-        self.available_table.setColumnCount(2)
-        self.available_table.setHorizontalHeaderLabels(["Version", "Release Date"])
+        self.available_table.setColumnCount(3)
+        self.available_table.setHorizontalHeaderLabels(["Version", "Release Date", "JDK"])
         self.available_table.setEditTriggers(QTableWidget.NoEditTriggers)
         self.available_table.setSelectionBehavior(QTableWidget.SelectRows)
         
@@ -341,10 +342,11 @@ class FHIRGuardGUI(QMainWindow):
         self.installed_list.clear()
         self.installed_list.addItems(self.installed_versions)
         
-        self.available_table.setRowCount(len(self.available_versions))
-        for row, version in enumerate(self.available_versions):
-            self.available_table.setItem(row, 0, QTableWidgetItem(version))
-            self.available_table.setItem(row, 1, QTableWidgetItem("2024-01-01"))  # Simulated date
+        self.available_table.setRowCount(len(self.versoes_info))
+        for row, info in enumerate(self.versoes_info):
+            self.available_table.setItem(row, 0, QTableWidgetItem(info["versao"]))
+            self.available_table.setItem(row, 1, QTableWidgetItem(info["data"]))
+            self.available_table.setItem(row, 2, QTableWidgetItem(info["jdkVersao"]))
         
         # Update version combos
         self.start_version_combo.clear()
@@ -533,7 +535,10 @@ logging:
                     # Atualiza listas
                     self.installed_versions = [v["nome"] for v in pathControll.list()]
                     self.update_versions_list()
-
+                    if version == self.default_version:
+                        clear_default_version()
+                        self.default_version = None
+                        self.current_version_label.setText("None")
                     self.status_bar.showMessage(f"Version {version} uninstalled", 3000)
 
                 except Exception as e:
@@ -574,7 +579,9 @@ logging:
                     uninstall(version)  # remove do disco
                 self.installed_versions = [v["nome"] for v in pathControll.list()]
                 self.update_versions_list()
-
+                clear_default_version()
+                self.default_version = None
+                self.current_version_label.setText("None")
                 QMessageBox.information(self, "Uninstallation Complete", "All versions have been uninstalled.")
                 self.status_bar.showMessage("All versions uninstalled successfully", 3000)
 

@@ -160,6 +160,16 @@ def mostRecentInstalledVersion():
             raise RuntimeError(f"Erro ao processar versão {version}: {str(e)}")
     return recent_version
 
+def get_default_version():
+    try:
+        default_path = "fg/dependencias/versionDefault.txt"
+        if os.path.exists(default_path):
+            with open(default_path, "r") as f:
+                return f.read().strip()
+        return None
+    except Exception:
+        return None
+
 def list() -> List[Dict[str, Any]]:
     try:
         homePath = home_path()

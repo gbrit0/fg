@@ -8,6 +8,8 @@ from typing import Generator
 
 import pathControll
 
+DEFAULT_FILE = "fg/dependencias/versionDefault.txt"
+
 def get_file_extension(url: str):
     clean_url = url.split('?')[0]
     clean_url = clean_url.split('#')[0]
@@ -162,7 +164,29 @@ def uninstall(version: str):
     except Exception as e:
         raise Exception(f"❌ Erro durante a desinstalação: {str(e)}")
         
+def set_default_version(version: str):
+    """
+    Define a versão padrão do FHIR Guard. Diretorio de gravação: fg/dependencias/versionDefault.txt
+    """
+    from pathControll import home_path
+    path = os.path.join(home_path(), version)
 
+    if not os.path.isdir(path):
+        raise Exception(f"❌ Versão '{version}' não está instalada em: {path}")
+
+    os.makedirs(os.path.dirname(DEFAULT_FILE), exist_ok=True)
+
+    with open(DEFAULT_FILE, "w") as f:
+        f.write(version)
+
+    return f"✅ Versão padrão definida como {version}"
+
+def clear_default_version():
+    """
+    Remove o arquivo que define a versão padrão.
+    """
+    if os.path.exists(DEFAULT_FILE):
+        os.remove(DEFAULT_FILE)
 
 def toRed(s:str):
     return "\033[91m" + s + "\033[0m"

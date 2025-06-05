@@ -98,6 +98,15 @@ def uninstall(version: str = versionHelp):
         typer.echo("Desinstalação cancelada!")
 
 @app.command()
+def set_default(version: str = versionHelp):
+    """Define a versão padrão do FHIR GUARD."""
+    try:
+        msg = manager.set_default_version(version)
+        typer.echo(typer.style(msg, fg=typer.colors.GREEN, bold=True))
+    except Exception as e:
+        typer.echo(typer.style(str(e), fg=typer.colors.RED, bold=True))
+
+@app.command()
 def list():
     """Shows all installed versions of the application."""
 
