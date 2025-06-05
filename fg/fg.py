@@ -62,7 +62,7 @@ def install(version: str = versionHelp):
             else:
                 typer.echo(f"\r{msg['nome']}: {msg['porcentagem']:.2f}%", nl=False)
         
-        sucesso = f"Versão {version} instalada com sucesso."
+        sucesso = f"\nVersão {version} instalada com sucesso."
         typer.echo(typer.style(sucesso, fg=typer.colors.GREEN, bold=True))
 
     except Exception as e:
@@ -75,13 +75,20 @@ def install(version: str = versionHelp):
 def update():
     """If a newer version exists, downloads, installs it and sets it as the current default."""
     try:
-        id = 0
-        for msg in manager.update():
-            if(msg["indice"] != id ):
-                id = msg["indice"]
-                typer.echo()
-            else:
-                typer.echo(f"\r{msg['nome']}: {msg['porcentagem']:.2f}%", nl=False)
+        versaoAtual = pathControll.mostRecentInstalledVersion()
+        if pathControll.mostRecentVersion() == versaoAtual:
+            id = 0
+            for msg in manager.update():
+                if(msg["indice"] != id ):
+                    id = msg["indice"]
+                    typer.echo()
+                else:
+                    typer.echo(f"\r{msg['nome']}: {msg['porcentagem']:.2f}%", nl=False)
+
+            sucesso = f"\nAtualizado para versão {pathControll.mostRecentVersion()}. Esta é agora a versão padrão."
+            typer.echo(typer.style(sucesso, fg=typer.colors.GREEN, bold=True))
+        else:
+            typer.echo(f"Nenhuma versão mais recente disponível. Você tem disponível a versão mais recente: {versaoAtual}.")
 
     except Exception as e:
         typer.echo()
