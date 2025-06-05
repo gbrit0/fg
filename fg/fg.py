@@ -61,10 +61,15 @@ def install(version: str = versionHelp):
                 typer.echo()
             else:
                 typer.echo(f"\r{msg['nome']}: {msg['porcentagem']:.2f}%", nl=False)
+        
+        sucesso = f"Versão {version} instalada com sucesso."
+        typer.echo(typer.style(sucesso, fg=typer.colors.GREEN, bold=True))
 
     except Exception as e:
         typer.echo()
-        typer.echo(typer.style(e, fg=typer.colors.RED, bold=True))
+
+        erro = f"Falha ao instalar versão {version}: {e}"
+        typer.echo(typer.style(erro, fg=typer.colors.RED, bold=True))
 
 @app.command()
 def update():
