@@ -100,7 +100,7 @@ def uninstall(version: str = versionHelp):
     if input(f"Confirm uninstallation of version {version}? (y/N)") == 'y':
         try:
             msg = manager.uninstall(version)    
-            typer.echo(msg)
+            typer.echo(typer.style(msg, fg=typer.colors.GREEN, bold=True))
         
         except Exception as e:
             typer.echo()
