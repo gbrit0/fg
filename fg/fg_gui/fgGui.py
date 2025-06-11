@@ -2,11 +2,11 @@ import sys
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QHBoxLayout,
                              QLabel, QPushButton, QLineEdit, QTextEdit, QListWidget, QTableWidget,
                              QTableWidgetItem, QGroupBox, QComboBox, QSpinBox, QProgressBar,
-                             QMessageBox, QFileDialog, QSplitter, QTreeWidget, QTreeWidgetItem)
-from PyQt5.QtCore import Qt, QTimer
+                             QMessageBox, QFileDialog, QSplitter, QTreeWidget, QTreeWidgetItem, QInputDialog)
+from PyQt5.QtCore import Qt, QTimer, QThread, pyqtSignal
 from PyQt5.QtGui import QColor, QFont
 from packaging.version import Version
-from manager import (install, uninstall, clear_default_version)
+from manager import (install, uninstall, set_default_version, clear_default_version)
 from controller import (start, stop)
 import monitor
 import pathControll
@@ -173,7 +173,10 @@ class FHIRGuardGUI(QMainWindow):
         self.install_btn.clicked.connect(self.install_version)
         install_layout.addWidget(self.install_btn)
         available_layout.addLayout(install_layout)
-        
+        self.progressBar = QProgressBar()
+        self.progressBar.setValue(0)
+        self.progressBar.setTextVisible(True)
+        available_layout.addWidget(self.progressBar)
         available_group.setLayout(available_layout)
         left_layout.addWidget(available_group)
         
@@ -447,17 +450,26 @@ logging:
             self.log_viewer.setPlainText(f"Error reading logs: {str(e)}")
 
     def start_instance(self):
+        """Start a new instance by selecting an app from the default version"""
         version = self.default_version
         if not version:
             QMessageBox.warning(self, "No Default Version", "Please set a default version before starting an instance.")
             return
+
         try:
             apps = pathControll.getApps(version)
             if not apps:
-                raise Exception("No apps found for this version.")
+                raise Exception("Nenhum app disponível para essa versão.")
 
-            jar_name = apps[0]["nome"]  # Pega o primeiro app como teste
-            pid = str(start(version, jar_name))
+            app_names = [app["nome"] for app in apps]
+
+            # Caixa de diálogo para escolher o app
+            selected_app, ok = QInputDialog.getItem(self, "Select Application",
+                                                    f"Available apps for version {version}:", app_names, 0, False)
+            if not ok or not selected_app:
+                return  # usuário cancelou
+
+            pid = str(start(version, selected_app))
 
             new_instance = {
                 "pid": pid,
@@ -470,11 +482,15 @@ logging:
             }
             self.running_instances.append(new_instance)
             self.update_instances_table()
-            self.logs_preview.append(f"{pid} - Instance started (version {version})")
-            QMessageBox.information(self, "Instance Started", f"Instance {pid} started.")
+
+            self.logs_preview.append(f"{pid} - Instance started (version {version}, app: {selected_app})")
+
+            QMessageBox.information(self, "Instance Started",
+                                    f"App '{selected_app}' (version {version}) iniciado com sucesso. PID: {pid}")
             self.status_bar.showMessage(f"Instance {pid} started", 3000)
+
         except Exception as e:
-            QMessageBox.critical(self, "Start Failed", str(e))
+            QMessageBox.critical(self, "Erro ao iniciar", str(e))
 
     def stop_instance(self):
         selected_rows = self.instances_table.selectedItems()
@@ -493,21 +509,35 @@ logging:
                     QMessageBox.critical(self, "Stop Failed", str(e))
 
     def install_version(self):
-        """Install the selected version"""
         version = self.version_combo.currentText()
-        if version:
-            if version in self.installed_versions:
-                QMessageBox.information(self, "Already Installed", f"Version {version} is already installed.")
-                return
-            try:
-                for progresso in install(version):
-                    self.status_bar.showMessage(f"{progresso['nome']}: {progresso['porcentagem']:.2f}%", 1000)
-                self.installed_versions.append(version)
-                self.installed_versions.sort(reverse=True)
-                self.update_versions_list()
-                QMessageBox.information(self, "Installation Complete", f"FHIR Guard {version} installed.")
-            except Exception as e:
-                QMessageBox.critical(self, "Installation Failed", str(e))
+        if not version:
+            QMessageBox.warning(self, "Nenhuma Versão Selecionada", "Por favor, selecione uma versão.")
+            return
+
+        if version in self.installed_versions:
+            QMessageBox.information(self, "Already Installed", f"Version {version} is already installed.")
+            return
+
+        self.install_thread = InstallThread(version)
+        self.install_thread.progress.connect(self.atualizar_barra_progresso)
+        self.install_thread.finished.connect(self.instalacao_concluida)
+        self.install_thread.error.connect(self.instalacao_falhou)
+
+        self.progressBar.setValue(0)
+        self.install_thread.start()
+
+    def atualizar_barra_progresso(self, valor):
+        self.progressBar.setValue(valor)
+
+    def instalacao_concluida(self, versao):
+        QMessageBox.information(self, "Instalação Concluída", f"Versão {versao} instalada com sucesso.")
+        self.installed_versions = [v["nome"] for v in pathControll.list()]
+        self.update_versions_list()
+        self.status_bar.showMessage(f"Versão {versao} instalada com sucesso", 3000)
+
+    def instalacao_falhou(self, erro):
+        QMessageBox.critical(self, "Erro na Instalação", erro)
+        self.status_bar.showMessage("Falha na instalação", 3000)
 
     def uninstall_version(self):
         """Uninstall the selected version"""
@@ -593,11 +623,18 @@ logging:
         selected_items = self.installed_list.selectedItems()
         if selected_items:
             version = selected_items[0].text()
-            self.default_version = version  # guarda a versão default
-            self.current_version_label.setText(version)
-            QMessageBox.information(self, "Default Version Set", 
-                                f"FHIR Guard {version} is now the default version.")
-            self.status_bar.showMessage(f"Version {version} set as default", 3000)
+
+            try:
+                set_default_version(version)
+                self.default_version = version
+                self.current_version_label.setText(version)
+
+                QMessageBox.information(self, "Default Version Set",
+                                        f"FHIR Guard {version} is now the default version.")
+                self.status_bar.showMessage(f"Version {version} set as default", 3000)
+
+            except Exception as e:
+                QMessageBox.critical(self, "Erro ao definir versão padrão", str(e))
         else:
             QMessageBox.warning(self, "No Selection", "Please select a version to set as default")
 
@@ -657,6 +694,30 @@ logging:
             self.cpu_progress.setValue((self.cpu_progress.value() + 5) % 100)
             self.memory_progress.setValue((self.memory_progress.value() + 3) % 100)
 
+class InstallThread(QThread):
+    progress = pyqtSignal(int)
+    finished = pyqtSignal(str)
+    error = pyqtSignal(str)
+
+    def __init__(self, version):
+        super().__init__()
+        self.version = version
+
+    def run(self):
+        try:
+            id = -1
+            def progresso_callback(p):
+                self.progress.emit(p)
+
+            for msg in install(self.version):
+                if msg["indice"] != id:
+                    id = msg["indice"]
+                else:
+                    progresso_callback(int(msg["porcentagem"]))
+            self.finished.emit(self.version)
+
+        except Exception as e:
+            self.error.emit(str(e))
 
 def main():
     app = QApplication(sys.argv)
