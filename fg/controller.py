@@ -1,4 +1,3 @@
-
 import os
 import subprocess
 from typing import List
@@ -66,13 +65,21 @@ def start(
                     creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
                 )
             else:
-                process = subprocess.Popen(
-                    cmd,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    stdin=subprocess.PIPE,
-                    preexec_fn=os.setsid
-                )
+                if hasattr(os, "setsid"):
+                    process = subprocess.Popen(
+                        cmd,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        stdin=subprocess.PIPE,
+                        preexec_fn=os.setsid
+                    )
+                else:
+                    process = subprocess.Popen(
+                        cmd,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        stdin=subprocess.PIPE
+                    )
 
             pid = process.pid
             monitor.save_pid(pid, version, " ".join(cmd))  # junta a lista de comando em uma str
@@ -101,8 +108,12 @@ def stop(pid: int):
         except subprocess.CalledProcessError as e:
             raise RuntimeError(f"Error stopping process (PID: {pid}): {str(e)}")
     else:
+        if hasattr(os, "getpgid"):
+            pgid = os.getpgid(pid)
+        else:
+            pgid = pid
         try:
-            os.killpg(os.getpgid(pid), signal.SIGTERM)
+            os.killpg(pgid, signal.SIGTERM)
         except ProcessLookupError:
             raise ProcessLookupError(f"Process with PID {pid} not found")
         except PermissionError:

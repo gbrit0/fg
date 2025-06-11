@@ -1,10 +1,13 @@
 import pytest
 import pathControll
 from unittest import mock
+import os
 
 def test_set_and_get_home_path():
    pathControll.set_home_path("/tmp/test_fg")
-   assert pathControll.home_path().endswith("/tmp/test_fg/.fg") or pathControll.home_path().endswith("\\tmp\\test_fg\\.fg")
+   esperado = os.path.normpath("/tmp/test_fg/.fg")
+   resultado = os.path.normpath(pathControll.home_path())
+   assert resultado == esperado
 
 @mock.patch("os.path.exists", return_value=False)
 @mock.patch("pathControll.procurarNovasVersoes")
