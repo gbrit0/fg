@@ -133,6 +133,9 @@ def install(version: str):
                     yield progresso
 
                 id +=1
+
+        
+        set_default_version(version)
         return
     
     except Exception as e:
