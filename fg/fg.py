@@ -147,7 +147,8 @@ def start(
 ):
     """Starts a specific version of the application (must be installed first)."""
     try:
-        typer.echo(f"Aplicação iniciada com sucesso. PID: {controller.start(version, app_name)}")
+        msg = f"Aplicação iniciada com sucesso. PID: {controller.start(version, app_name)}"
+        typer.echo(typer.style(msg, fg=typer.colors.GREEN, bold=True))
     except Exception as e:
         typer.echo()
         typer.echo(typer.style(e, fg=typer.colors.RED, bold=True))
@@ -157,7 +158,8 @@ def stop(pid: int = pidHelp):
     """Stops a running instance of the application."""
     try:
         controller.stop(pid)
-        typer.echo(f"Instância da aplicação (PID: {pid}) parada com sucesso")
+        msg = f"Instância da aplicação (PID: {pid}) parada com sucesso"
+        typer.echo(typer.style(msg, fg=typer.colors.GREEN, bold=True))
     except Exception as e:
         typer.echo()
         typer.echo(typer.style(e, fg=typer.colors.RED, bold=True))
