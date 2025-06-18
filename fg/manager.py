@@ -188,8 +188,19 @@ def clear_default_version():
     if os.path.exists(DEFAULT_FILE):
         os.remove(DEFAULT_FILE)
 
-def toRed(s:str):
-    return "\033[91m" + s + "\033[0m"
+def get_default_version() -> str:
+    """
+    Retorna a versão padrão do FHIR Guard definida no arquivo:
+    fg/dependencias/versionDefault.txt
+    """
+    if not os.path.isfile(DEFAULT_FILE):
+        raise Exception("❌ Nenhuma versão padrão foi definida.")
+
+    with open(DEFAULT_FILE, "r") as f:
+        version = f.read().strip()
+
+    return version
+    
 
 if __name__ == "__main__":
     for msg in install("6.5.1"):
