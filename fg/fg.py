@@ -129,7 +129,7 @@ def list():
         
         for versao in versoes:
             if(versao["default"]):
-                typer.echo(f"* {versao['nome']} (padrão - mais recente)")
+                typer.echo(f"* {versao['nome']} (padrão)")
             else:
                 typer.echo(f"  {versao['nome']}")
 
