@@ -12,6 +12,7 @@ app = typer.Typer(no_args_is_help=True) #SE DER ERRO AO MOSTRAR O HELP SEM ARGUM
 
 # Definição dos argumentos e seus comentários
 versionHelp = typer.Argument(help="Versão do FHIR Guard.")
+versionOptionHelp = typer.Option(manager.get_default_version, "--version", "-v", help="Versão do FHIR Guard.")
 appNameHelp = typer.Argument(help="The name of the aplication")
 pidHelp = typer.Argument(help="PID can be obtained from the 'fg status' command.")
 tailHelp = typer.Option(None, "--tail", "-t", help="Shows the last n lines of the logs. If not specified, shows all logs.")
@@ -141,7 +142,7 @@ def list():
 # Controle da aplicação
 @app.command(context_settings={"allow_extra_args": True, "ignore_unknown_options": True})
 def start(
-    version: str = versionHelp,
+    version: str = versionOptionHelp,
     app_name: str = appNameHelp,
     #args: List[str] = typer.Argument(None, help="Additional arguments for the application")
 ):
@@ -181,7 +182,11 @@ def status():
         typer.echo(typer.style(e, fg=typer.colors.RED, bold=True))
 
 @app.command()
-def logs(version: str = versionHelp, app_name: str = appNameHelp, tail: int = tailHelp, follow: bool = followHelp):
+def logs(version: str = versionOptionHelp, 
+         app_name: str = appNameHelp, 
+         tail: int = tailHelp, 
+         follow: bool = followHelp
+         ):
     """Displays the logs for a specific running instance."""
     
     try:

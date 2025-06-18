@@ -205,15 +205,3 @@ def get_default_version() -> str:
     return version
     
 
-if __name__ == "__main__":
-    for msg in install("6.5.1"):
-        if isinstance(msg, message.Message):
-            if msg.mensagem.startswith("\r"):
-                print(msg.mensagem, end="", flush=True)
-            else:
-                if msg.status == message.Status.ERRO:
-                    print(toRed(msg.mensagem))
-                else:
-                    print(msg.mensagem)
-        else:
-            print(msg)
