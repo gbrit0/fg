@@ -5,7 +5,7 @@ from typing import Dict, Any, List
 from datetime import datetime
 import manager
 
-FG_HOME = os.environ.get("FG_HOME", "fg")
+FG_HOME = os.environ.get("FG_HOME",os.path.expanduser("~"))
 installPath = os.path.join(FG_HOME, ".fg")
 
 def set_home_path(homePath: str):
