@@ -133,6 +133,9 @@ def install(version: str):
                     yield progresso
 
                 id +=1
+
+        
+        set_default_version(version)
         return
     
     except Exception as e:
@@ -188,18 +191,17 @@ def clear_default_version():
     if os.path.exists(DEFAULT_FILE):
         os.remove(DEFAULT_FILE)
 
-def toRed(s:str):
-    return "\033[91m" + s + "\033[0m"
+def get_default_version() -> str:
+    """
+    Retorna a versão padrão do FHIR Guard definida no arquivo:
+    fg/dependencias/versionDefault.txt
+    """
+    if not os.path.isfile(DEFAULT_FILE):
+        raise Exception("❌ Nenhuma versão padrão foi definida.")
 
-if __name__ == "__main__":
-    for msg in install("6.5.1"):
-        if isinstance(msg, message.Message):
-            if msg.mensagem.startswith("\r"):
-                print(msg.mensagem, end="", flush=True)
-            else:
-                if msg.status == message.Status.ERRO:
-                    print(toRed(msg.mensagem))
-                else:
-                    print(msg.mensagem)
-        else:
-            print(msg)
+    with open(DEFAULT_FILE, "r") as f:
+        version = f.read().strip()
+
+    return version
+    
+

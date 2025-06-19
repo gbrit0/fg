@@ -5,7 +5,7 @@ from typing import Dict, Any, List
 from datetime import datetime
 import manager
 
-FG_HOME = os.environ.get("FG_HOME", "fg")
+FG_HOME = os.environ.get("FG_HOME",os.path.expanduser("~"))
 installPath = os.path.join(FG_HOME, ".fg")
 
 def set_home_path(homePath: str):
@@ -170,31 +170,45 @@ def get_default_version():
     except Exception:
         return None
 
+
 def list() -> List[Dict[str, Any]]:
+    """
+    Lista as versões instaladas do FHIR Guard, indicando qual é a versão padrão.
+    Se não houver uma versão padrão definida, usa a mais recente.
+    """
     try:
         homePath = home_path()
-        if not os.path.isdir(homePath):
-            raise FileNotFoundError(f"O diretório {homePath} não existe ou não é um diretório")
 
+        if not os.path.isdir(homePath):
+            raise FileNotFoundError(f"O diretório {homePath} não existe ou não é um diretório.")
+
+        # Obtem versão padrão, se houver
         try:
-            recent = mostRecentInstalledVersion()
-        except Exception as e:
-            recent = None  # Ignora erro, mas não interrompe a listagem
+            default_version = manager.get_default_version()
+        except Exception:
+            default_version = None
+
+        versoes_instaladas = sorted([
+            item for item in os.listdir(homePath)
+            if os.path.isdir(os.path.join(homePath, item))
+        ])
+
+        if not versoes_instaladas:
+            return []  # Não há versões instaladas
+
+        # Se não há default, pega a mais recente
+        if not default_version:
+            try:
+                default_version = mostRecentInstalledVersion()
+            except Exception:
+                default_version = None  # Se não conseguir, permanece None
 
         versoes = []
-        dirs_exist = False
-
-        for item in sorted(os.listdir(homePath)):
-            full_path = os.path.join(homePath, item)
-            if os.path.isdir(full_path):
-                dirs_exist = True
-                versoes.append({
-                    "nome": item,
-                    "default": item == recent
-                })
-
-        if not dirs_exist:
-            return []
+        for item in versoes_instaladas:
+            versoes.append({
+                "nome": item,
+                "default": item == default_version
+            })
 
         return versoes
 
