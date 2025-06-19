@@ -54,7 +54,7 @@ def extrair_com_progresso_zip(path_compactado: str, destino: str, id: int, nome:
 
 def install(version: str):
     temp_dir = None
-    final_install_path = os.path.join(pathControll.home_path, version)
+    final_install_path = os.path.join(pathControll.home_path(), version)
 
     try:
         id = 0
