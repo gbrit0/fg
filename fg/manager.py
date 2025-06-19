@@ -3,6 +3,8 @@ import requests
 import tarfile
 import zipfile
 import shutil
+import tempfile
+
 from classes import message
 from typing import Generator
 
@@ -51,59 +53,64 @@ def extrair_com_progresso_zip(path_compactado: str, destino: str, id: int, nome:
             yield {"indice": id,"nome": nome, "porcentagem": porcentagem}
 
 def install(version: str):
-    try: 
+    temp_dir = None
+    final_install_path = os.path.join(pathControll.home_path, version)
+
+    try:
         id = 0
         nome = ""
-        homePath = pathControll.home_path()
-        pathOfDownload = os.path.join(homePath, version)
-        jdkPath = os.path.join(pathOfDownload, "jdk")
 
-        if os.path.exists(pathOfDownload):
+        if os.path.exists(final_install_path):
             raise Exception("A versão já foi instalada")
-        
-        os.makedirs(pathOfDownload, exist_ok=True)
+
+        # Cria pasta temporária
+        temp_dir = tempfile.mkdtemp(prefix="install_temp_")
+        pathOfDownload = temp_dir  # Usamos o temp até terminar tudo
+
+        jdkPath = os.path.join(pathOfDownload, "jdk")
 
         jdkUrl = pathControll.getJdkUrl(version)
         ext = get_file_extension(jdkUrl)
 
-        if ext == '.gz': 
+        if ext == '.gz':
             nome = "Baixando JDK (.tar.gz)"
-            yield {"indice": id,"nome": nome, "porcentagem": 0}
+            yield {"indice": id, "nome": nome, "porcentagem": 0}
 
             jdkCompactadoPath = os.path.join(jdkPath, "jdk.tar.gz")
             os.makedirs(jdkPath, exist_ok=True)
-            
+
             for progresso in download_com_progresso(jdkUrl, jdkCompactadoPath, id, nome):
                 yield progresso
             id += 1
 
             nome = "Extraindo arquivo jdk"
-            yield {"indice": id,"nome": nome, "porcentagem": 0}
-            
+            yield {"indice": id, "nome": nome, "porcentagem": 0}
+
             for progresso in extrair_com_progresso_tar(jdkCompactadoPath, jdkPath, id, nome):
                 yield progresso
             id += 1
 
         elif ext == '.zip':
-
             nome = "Baixando JDK (.zip)"
-            yield {"indice": id,"nome": nome, "porcentagem": 0}
+            yield {"indice": id, "nome": nome, "porcentagem": 0}
 
             jdkCompactadoPath = os.path.join(jdkPath, "jdk.zip")
             os.makedirs(jdkPath, exist_ok=True)
-            
-            for progresso in download_com_progresso(jdkUrl, jdkCompactadoPath,id,nome):
+
+            for progresso in download_com_progresso(jdkUrl, jdkCompactadoPath, id, nome):
                 yield progresso
             id += 1
 
             nome = "Extraindo arquivo jdk"
-            yield {"indice": id,"nome": nome, "porcentagem": 0}
-            for progresso in extrair_com_progresso_zip(jdkCompactadoPath, jdkPath,id,nome):
+            yield {"indice": id, "nome": nome, "porcentagem": 0}
+
+            for progresso in extrair_com_progresso_zip(jdkCompactadoPath, jdkPath, id, nome):
                 yield progresso
             id += 1
 
         os.remove(jdkCompactadoPath)
 
+        # Remove subdiretório redundante dentro do jdk se existir
         jdk_contents = os.listdir(jdkPath)
         if len(jdk_contents) == 1:
             subdir = os.path.join(jdkPath, jdk_contents[0])
@@ -115,34 +122,35 @@ def install(version: str):
                     )
                 shutil.rmtree(subdir)
 
-        
-        
+        # Baixa apps e dependências
         apps = pathControll.getApps(version)
         for app in apps:
-            
             pathOfApp = os.path.join(pathOfDownload, app['nome'])
             os.makedirs(pathOfApp)
+
             for dependencia in app['dependencias']:
                 dependenciePath = os.path.join(pathOfApp, dependencia['nomeLocal'])
                 dependencieUrl = dependencia['url']
 
                 nome = f"Baixando {dependencia['nomeLocal']}"
-                yield {"indice": id,"nome": nome, "porcentagem": 0}
+                yield {"indice": id, "nome": nome, "porcentagem": 0}
 
-                for progresso in download_com_progresso(dependencieUrl, dependenciePath,id,nome):
+                for progresso in download_com_progresso(dependencieUrl, dependenciePath, id, nome):
                     yield progresso
 
-                id +=1
+                id += 1
 
-        
+        # Faz o rename/move da pasta temporária para a final
+        shutil.move(temp_dir, final_install_path)
+        temp_dir = None  # Marca como None para não tentar deletar
+
         set_default_version(version)
         return
-    
+
     except Exception as e:
-        if os.path.exists(pathOfDownload):
-            shutil.rmtree(pathOfDownload)
+        if temp_dir and os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir)
         raise Exception(f"❌ Erro durante a instalação: {str(e)}")
-    
 
 
 def update():
