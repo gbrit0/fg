@@ -12,28 +12,28 @@ app = typer.Typer(no_args_is_help=True) #SE DER ERRO AO MOSTRAR O HELP SEM ARGUM
 
 # Definição dos argumentos e seus comentários
 versionHelp = typer.Argument(help="Versão do FHIR Guard.")
-versionOptionHelp = typer.Option(manager.get_default_version, "--version", "-v", help="Versão do FHIR Guard.")
-appNameHelp = typer.Argument(help="The name of the aplication")
-pidHelp = typer.Argument(help="PID can be obtained from the 'fg status' command.")
-tailHelp = typer.Option(None, "--tail", "-t", help="Shows the last n lines of the logs. If not specified, shows all logs.")
-followHelp = typer.Option(False, "--follow", "-f", help="Follows the log output in real-time.")
+versionOptionHelp = typer.Option(manager.get_default_version, "--version", "-v", help="Versão do FHIR Guard (se não for especificada, usa a versão padrão).")
+appNameHelp = typer.Argument(help="Nome da aplicação.")
+pidHelp = typer.Argument(help="PID pode ser obtido com o comando 'fg status'.")
+tailHelp = typer.Option(None, "--tail", "-t", help="Mostra as últimas N linhas dos logs. Se não for especificado, mostra todo o log.")
+followHelp = typer.Option(False, "--follow", "-f", help="Acompanha a saída dos logs em tempo real.")
 
 # Opções globais
 @app.callback()
 def global_options(
     #log_level: str = typer.Option(None, "--log-level", "-l", help="Sets the log level for the fg CLI (debug, info, warn, error)."),
-    working_directory: str = typer.Option(None, "--dir", "-d", help="Specifies the working directory."),
+    working_directory: str = typer.Option(None, "--dir", "-d", help="Especifica o diretório de trabalho."),
 ):
     #if log_level:
     #    typer.echo("Modo detalhado ativado!")
     if working_directory:
         pathControll.set_home_path(working_directory)
-        typer.echo(f"Using work directiry as {working_directory}")
+        typer.echo(f"Usando o diretório de trabalho como {working_directory}")
 
 # Comandos básicos
 @app.command()
 def available():
-    """Lists all available FHIR Guard versions, regardless of what is installed in the working directory."""
+    """Lista todas as versões disponíveis do FHIR Guard, independentemente do que estiver instalado no diretório de trabalho."""
 
     try:
         resultados = pathControll.available()
@@ -47,13 +47,13 @@ def available():
 
 @app.command()
 def gui():
-    """Launches the graphical user interface."""
+    """Inicia a interface gráfica do usuário."""
     fgGui.main()
 
 # Gerenciamento de instalação
 @app.command()
 def install(version: str = versionHelp):
-    """Installs a specific version of the FHIR Guard application."""
+    """Instala uma versão específica do aplicativo FHIR Guard."""
     try:
         id = 0
         for msg in manager.install(version):
@@ -74,7 +74,7 @@ def install(version: str = versionHelp):
 
 @app.command()
 def update():
-    """If a newer version exists, downloads, installs it and sets it as the current default."""
+    """Se houver uma versão mais nova, baixa e instala-a e define-a como a versão padrão atual."""
     try:
         versaoAtual = pathControll.mostRecentInstalledVersion()
         if pathControll.mostRecentVersion() == versaoAtual:
@@ -97,8 +97,8 @@ def update():
 
 @app.command()
 def uninstall(version: str = versionHelp):
-    """Removes a specific version of the application."""
-    if input(f"Confirm uninstallation of version {version}? (y/N)") == 'y':
+    """Remove uma versão específica do aplicativo."""
+    if input(f"Confirma a remoção da versão {version}? (s/N)") == 's':
         try:
             msg = manager.uninstall(version)    
             typer.echo(typer.style(msg, fg=typer.colors.GREEN, bold=True))
@@ -121,11 +121,11 @@ def set_default(version: str = versionHelp):
 
 @app.command()
 def list():
-    """Shows all installed versions of the application."""
+    """Exibe todas as versões instaladas do aplicativo."""
 
     try:
         versoes = pathControll.list()
-        typer.echo("Installed versions:")
+        typer.echo("Versões instaladas:")
         
         for versao in versoes:
             if(versao["default"]):
@@ -140,13 +140,14 @@ def list():
 
 
 # Controle da aplicação
-@app.command(context_settings={"allow_extra_args": True, "ignore_unknown_options": True})
+#@app.command(context_settings={"allow_extra_args": True, "ignore_unknown_options": True})
+@app.command()
 def start(
     version: str = versionOptionHelp,
     app_name: str = appNameHelp,
     #args: List[str] = typer.Argument(None, help="Additional arguments for the application")
 ):
-    """Starts a specific version of the application (must be installed first)."""
+    """Inicia uma versão específica do aplicativo (deve ser instalada primeiro)."""
     try:
         msg = f"Aplicação iniciada com sucesso. PID: {controller.start(version, app_name)}"
         typer.echo(typer.style(msg, fg=typer.colors.GREEN, bold=True))
@@ -156,7 +157,7 @@ def start(
 
 @app.command()
 def stop(pid: int = pidHelp):
-    """Stops a running instance of the application."""
+    """Para uma instância em execução do aplicativo."""
     try:
         controller.stop(pid)
         msg = f"Instância da aplicação (PID: {pid}) parada com sucesso"
@@ -170,13 +171,43 @@ def stop(pid: int = pidHelp):
 # Monitoramento e diagnóstico
 @app.command()
 def status():
-    """Shows the current status of all running instances of the application."""
+    """Exibe o status atual de todas as instâncias em execução do aplicativo."""
 
     try:
         processos = monitor.status()
-        typer.echo("PID      Version   Port   Uptime   Memory       CPU       Tasks")
-        for processo in processos:
-            typer.echo(f"{processo['PID']}    {processo['Version']}    {processo['Port']}   {processo['Uptime']}       {processo['Memory']}    {processo['CPU']}    {processo['Tasks']}")
+
+        # Define os nomes das colunas
+        colunas = ["PID", "Versão", "Porta", "Tempo de execução", "Memória", "CPU", "Tarefas"]
+
+        # Junta cabeçalho e dados para calcular larguras
+        dados = [
+            [str(processo['PID']),
+            str(processo['Version']),
+            str(processo['Port']),
+            str(processo['Uptime']),
+            str(processo['Memory']),
+            str(processo['CPU']),
+            str(processo['Tasks'])]
+            for processo in processos
+        ]
+
+        # Inclui o cabeçalho para calcular o tamanho máximo de cada coluna
+        dados_com_cabecalho = [colunas] + dados
+
+        # Calcula a largura de cada coluna
+        larguras = [max(len(str(linha[i])) for linha in dados_com_cabecalho) for i in range(len(colunas))]
+
+        # Função para formatar uma linha
+        def formatar_linha(linha):
+            return "  ".join(f"{texto:<{larguras[i]}}" for i, texto in enumerate(linha))
+
+        # Imprime cabeçalho
+        typer.echo(formatar_linha(colunas))
+
+        # Imprime os dados
+        for linha in dados:
+            typer.echo(formatar_linha(linha))
+
     except Exception as e:
         typer.echo()
         typer.echo(typer.style(e, fg=typer.colors.RED, bold=True))
@@ -187,7 +218,7 @@ def logs(version: str = versionOptionHelp,
          tail: int = tailHelp, 
          follow: bool = followHelp
          ):
-    """Displays the logs for a specific running instance."""
+    """Exibe os logs de uma instância em execução específica."""
     
     try:
         for linha in monitor.logs(app_name, version, tail, follow):
