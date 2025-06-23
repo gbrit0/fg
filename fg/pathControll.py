@@ -5,13 +5,20 @@ from typing import Dict, Any, List
 from datetime import datetime
 import manager
 
-FG_HOME = os.environ.get("FG_HOME",os.path.expanduser("~"))
-installPath = os.path.join(FG_HOME, ".fg")
 
 def set_home_path(homePath: str):
-    global FG_HOME, installPath
-    FG_HOME = homePath
-    installPath = os.path.join(FG_HOME, ".fg")
+
+    try:
+        global FG_HOME, installPath
+        FG_HOME = homePath
+        installPath = os.path.join(FG_HOME, ".fg")
+        os.makedirs(installPath, exist_ok=True)
+    except Exception as e:
+        raise Exception(f"Erro ao criar diretorio .fg: {e}")
+
+
+set_home_path(os.environ.get("FG_HOME", os.path.expanduser("~")))
+
 
 def home_path() -> str:
     try:
