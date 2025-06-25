@@ -122,3 +122,26 @@ def stop(pid: int):
             raise RuntimeError(f"Error stopping process (PID: {pid}): {str(e)}")
 
     return f"Application instance (PID: {pid}) stopped successfully"
+
+if __name__ == "__main__":
+
+
+    win = ["timeout", "60"]
+    lin = ["sleep", "60"]
+    proc = subprocess.Popen(lin)
+    print(f"Processo iniciado com PID {proc.pid}")
+
+    
+
+    import psutil
+
+    def is_running(pid):
+        return psutil.pid_exists(pid)
+    
+    print(is_running(proc.pid))
+
+    stop(proc.pid) #parei o processo
+
+    print(is_running(proc.pid))
+
+    
