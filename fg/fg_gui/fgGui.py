@@ -324,6 +324,7 @@ class FHIRGuardGUI(QMainWindow):
 
     def update_instances_table(self):
         """Update the table while ensuring all fields exist"""
+        self.running_instances = [inst for inst in self.running_instances if psutil.pid_exists(int(inst.get("PID", -1)))]
         self.instances_table.setRowCount(len(self.running_instances))
         
         for row, instance in enumerate(self.running_instances):
